@@ -1,0 +1,30 @@
+{
+  "name": "MLBaseActions",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mozu-customer-success/ML-Base-ArcActions\n"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.2.0",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-mocha-test": "^0.13.3",
+    "grunt-mozu-appdev-sync": "^2.4.1",
+    "load-grunt-tasks": "^3.5.2",
+    "mocha": "^4.0.1",
+    "mozu-action-helpers": "^0.5.6",
+    "mozu-action-simulator": "^1.6.3",
+    "time-grunt": "^1.4.0"
+  },
+  "dependencies": {
+    "async": "^2.6.0",
+    "js2xmlparser": "^3.0.0",
+    "mozu-node-sdk": "^2.12.4-alpha",
+    "xmljson": "^0.2.0"
+  }
+}

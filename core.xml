@@ -1,0 +1,9 @@
+<Core xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://developer.mozu.com/v1">
+  <DevAccountNamespace>BigDs</DevAccountNamespace>
+  <Name>ArcActionsDev</Name>
+  <AppId>ArcActionsDev</AppId>
+  <Version>1.0.0</Version>
+  <SharedSecret>0541ed94cec046b29472e1f7cfd819e3</SharedSecret>
+  <MozuApiVersion>1.1840.18284.0</MozuApiVersion>
+  <Description />
+</Core>

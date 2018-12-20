@@ -1,0 +1,132 @@
+<Behaviors xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://developer.mozu.com/v1">
+  <Behavior>Product Create</Behavior>
+  <Behavior>Product Update</Behavior>
+  <Behavior>Product Delete</Behavior>
+  <Behavior>Product Read</Behavior>
+  <Behavior>Publish Content Changes</Behavior>
+  <Behavior>Publish Product Changes</Behavior>
+  <Behavior>Site Create Content</Behavior>
+  <Behavior>Site Update Content</Behavior>
+  <Behavior>Site Delete Content</Behavior>
+  <Behavior>Product Category Read</Behavior>
+  <Behavior>Product Category Create</Behavior>
+  <Behavior>Product Category Delete</Behavior>
+  <Behavior>Product Category Update</Behavior>
+  <Behavior>Discount Read</Behavior>
+  <Behavior>Discount Create</Behavior>
+  <Behavior>Discount Update</Behavior>
+  <Behavior>Discount Delete</Behavior>
+  <Behavior>Admin User Read</Behavior>
+  <Behavior>Shopper User Read</Behavior>
+  <Behavior>Shopper User Create</Behavior>
+  <Behavior>Shopper User Update</Behavior>
+  <Behavior>Shopper User Delete</Behavior>
+  <Behavior>Customer Read</Behavior>
+  <Behavior>Customer Update</Behavior>
+  <Behavior>Customer Delete</Behavior>
+  <Behavior>Customer Create</Behavior>
+  <Behavior>Tenant Read</Behavior>
+  <Behavior>General Settings Read</Behavior>
+  <Behavior>General Settings Update</Behavior>
+  <Behavior>Shipping Settings Read</Behavior>
+  <Behavior>Shipping Settings Create</Behavior>
+  <Behavior>Shipping Settings Update</Behavior>
+  <Behavior>Shipping Settings Delete</Behavior>
+  <Behavior>Order Settings Read</Behavior>
+  <Behavior>Order Settings Update</Behavior>
+  <Behavior>Purchase Order Read</Behavior>
+  <Behavior>Purchase Order Create</Behavior>
+  <Behavior>Purchase Order Update</Behavior>
+  <Behavior>Payment Read</Behavior>
+  <Behavior>Payment Create</Behavior>
+  <Behavior>Payment Update</Behavior>
+  <Behavior>Payment Delete</Behavior>
+  <Behavior>Cart Read</Behavior>
+  <Behavior>Cart Update</Behavior>
+  <Behavior>Cart Delete</Behavior>
+  <Behavior>Order Read</Behavior>
+  <Behavior>Order Create</Behavior>
+  <Behavior>Order Update - All</Behavior>
+  <Behavior>Order Delete</Behavior>
+  <Behavior>Order Fulfill</Behavior>
+  <Behavior>Order Cancel</Behavior>
+  <Behavior>Order Apply Payment</Behavior>
+  <Behavior>Developer Account Read</Behavior>
+  <Behavior>Developer Asset Read</Behavior>
+  <Behavior>Developer Asset Create</Behavior>
+  <Behavior>Developer Asset Update</Behavior>
+  <Behavior>Developer Asset Delete</Behavior>
+  <Behavior>Read Payment Settings</Behavior>
+  <Behavior>Extensibility Read</Behavior>
+  <Behavior>Extensibility Create</Behavior>
+  <Behavior>Extensibility Update</Behavior>
+  <Behavior>Extensibility Delete</Behavior>
+  <Behavior>Application Status Read</Behavior>
+  <Behavior>Application Status Update</Behavior>
+  <Behavior>Application Status Create</Behavior>
+  <Behavior>Application Status Delete</Behavior>
+  <Behavior>Application Status Enable</Behavior>
+  <Behavior>Site Read Content</Behavior>
+  <Behavior>Site Read Document List</Behavior>
+  <Behavior>Site Create Document List</Behavior>
+  <Behavior>Site Update Document List</Behavior>
+  <Behavior>Site Delete Document List</Behavior>
+  <Behavior>Validate an address</Behavior>
+  <Behavior>Wishlist Read</Behavior>
+  <Behavior>Wishlist Create</Behavior>
+  <Behavior>Wishlist Update</Behavior>
+  <Behavior>Wishlist Delete</Behavior>
+  <Behavior>Change Content Publishing Mode</Behavior>
+  <Behavior>Change Product Publishing Mode</Behavior>
+  <Behavior>Channel Read</Behavior>
+  <Behavior>Channel Create</Behavior>
+  <Behavior>Channel Update</Behavior>
+  <Behavior>Channel Delete</Behavior>
+  <Behavior>ChannelGroup Read</Behavior>
+  <Behavior>ChannelGroup Create</Behavior>
+  <Behavior>ChannelGroup Update</Behavior>
+  <Behavior>ChannelGroup Delete</Behavior>
+  <Behavior>Credit Read</Behavior>
+  <Behavior>Credit Update</Behavior>
+  <Behavior>Credit Delete</Behavior>
+  <Behavior>Credit Create</Behavior>
+  <Behavior>Location Create</Behavior>
+  <Behavior>Location Update</Behavior>
+  <Behavior>Location Delete</Behavior>
+  <Behavior>Location Read</Behavior>
+  <Behavior>Stock Notification Read</Behavior>
+  <Behavior>Stock Notification Update</Behavior>
+  <Behavior>Stock Notification Delete</Behavior>
+  <Behavior>Stock Notification Create</Behavior>
+  <Behavior>Read installed applications</Behavior>
+  <Behavior>Update installed applications</Behavior>
+  <Behavior>Create EntityList Definition</Behavior>
+  <Behavior>Update EntityList Definition</Behavior>
+  <Behavior>Delete EntityList Definition</Behavior>
+  <Behavior>Product Code Change</Behavior>
+  <Behavior>View live content</Behavior>
+  <Behavior>Customer Password Update</Behavior>
+  <Behavior>Log Read Behavior</Behavior>
+  <Behavior>Create CustomRoutes Definition</Behavior>
+  <Behavior>Read CustomRoutes Definition</Behavior>
+  <Behavior>Update CustomRoutes Definition</Behavior>
+  <Behavior>Delete CustomRoutes Definition</Behavior>
+  <Behavior>Create PublishSet Definition</Behavior>
+  <Behavior>Read Publish Set Definition</Behavior>
+  <Behavior>Update Publish Set Definition</Behavior>
+  <Behavior>Delete Publish Set Definition</Behavior>
+  <Behavior>Publish Publish Set Definition</Behavior>
+  <Behavior>Create Product Ranking Definition</Behavior>
+  <Behavior>Read Product Ranking Definition</Behavior>
+  <Behavior>Update Product Ranking Definition</Behavior>
+  <Behavior>Delete Product Ranking Definition</Behavior>
+  <Behavior>Create Price List</Behavior>
+  <Behavior>Read Price List</Behavior>
+  <Behavior>Update Price List</Behavior>
+  <Behavior>Delete Price List</Behavior>
+  <Behavior>Order Update - Items</Behavior>
+  <Behavior>Order Update - Pricing</Behavior>
+  <Behavior>Order Update - Discounts</Behavior>
+  <Behavior>Order Update - Attributes</Behavior>
+  <Behavior>Order Update - Manual Adjustments</Behavior>
+</Behaviors>
