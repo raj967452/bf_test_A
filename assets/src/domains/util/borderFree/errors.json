@@ -1,0 +1,21 @@
+{
+  "category": "mozu",
+  "applicationName": "CommerceWebApi",
+  "errorCode": "PAYMENT_ERROR",
+  "message": "",
+  "additionalErrorData": [],
+  "items": [{
+    "category": "mozu",
+    "errorCode": "PAYMENT_ERROR",
+    "message": "",
+    "additionalErrorData": [{
+        "name": "Property",
+        "value": "paymentType"
+      },
+      {
+        "name": "Message",
+        "value": ""
+      }
+    ]
+  }]
+}
