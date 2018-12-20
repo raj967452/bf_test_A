@@ -33,18 +33,12 @@ module.exports = function (context, callback) {
 
   try {
 
-    var BorderFreeSettingsClient = require("mozu-node-sdk/clients/platform/entitylists/entity");
-    var borderFreeSettingsEntity = BorderFreeSettingsClient(context);
-    borderFreeSettingsEntity.context['user-claims'] = null;
-    
-    borderFreeSettingsEntity.getEntities({
-        entityListFullName: helper.getBorderFreeEntity(context)
-      })
+
+    helper.getEntities(context)
       .then(function (response) {
         var bfSettings = response.items[0];
         var selectedExData = helper.getExchangeRateData(context);
         if (!_.isUndefined(bfSettings.bf_is_enabled) && _.upperCase(selectedExData.country_code) !== 'US') {
-          var userContext = context.items.pageContext.user;
           var kiboCheckoutModel = (context.response.viewData || {}).model,
             kiboSiteContext = context.items.siteContext,
             borderFreeSoapOptions, finalCart = [],
@@ -54,7 +48,7 @@ module.exports = function (context, callback) {
 
           var borderFreeCart = {
             "header": "",
-            "payload": {
+            "payload": { 
               "setCheckoutSessionRequest": {
                 "@": {
                   "id": kiboCheckoutModel.id
@@ -124,7 +118,7 @@ module.exports = function (context, callback) {
               "deliveryPromiseMaximum": 0
             },
             "sessionDetails": {
-              "buyerSessionId": userContext.userId,
+              "buyerSessionId": context.items.pageContext.user.userId,
               "buyerIpAddress": kiboCheckoutModel.ipAddress,
               "affiliateNetwork": {
                 "@": {
@@ -313,8 +307,8 @@ module.exports = function (context, callback) {
           // if borderfree not true    
           callback();
         }
-      }, function (error) {
-        console.log("error: ", error);
+      }, function (err) {
+        console.log("", err);
         callback();
       });
   } catch (e) {

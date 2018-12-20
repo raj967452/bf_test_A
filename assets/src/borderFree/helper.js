@@ -3,6 +3,32 @@ var getAppInfo = require('mozu-action-helpers/get-app-info');
 var borderFreeConstants = require("./constants");
 
 var helper = module.exports = {
+  getEntities: function (context) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+      // The Promise constructor should catch any errors thrown on
+      // this tick. Alternately, try/catch and reject(err) on catch.
+      console.log("asd");
+      var BorderFreeSettingsClient = require("mozu-node-sdk/clients/platform/entitylists/entity");
+      var borderFreeSettingsEntity = BorderFreeSettingsClient(context);
+      borderFreeSettingsEntity.context['user-claims'] = null;
+
+      borderFreeSettingsEntity
+        .getEntities({
+          entityListFullName: self.getBorderFreeEntity(context)
+        })
+        .then(function (response) {          
+          // call resolve with results
+          console.log(response);
+          resolve(response);
+        }, function (err) {
+          // Call reject on error states
+          if (err) {
+            return reject(err);
+          }
+        });
+    });
+  },
   createClientFromContext: function (client, context, removeClaims) {
     var c = client(context);
     if (removeClaims)
@@ -28,5 +54,24 @@ var helper = module.exports = {
       currency_QuoteId: context.request.cookies.currency_QuoteId.value
     };
     return exchangeRate;
+  },
+  errorHandling: function (errorRes, context, callback) {
+    console.log(errorRes);
+    context.response.viewData.model.messages = [{
+      'message': "Error in border free"
+    }];
+    context.response.redirect(defaultRedirect);
+
+    //var errors = _.flatMap(errorRes.message)[0];
+    //if (!_.isUndefined(errors.errorResponse.errors)) {
+    //errorSet.items[0].message = errors.errorResponse.errors.error[0].details;
+    //context.response.body = errorSet;
+    // _.each(errors.errorResponse.errors, function(val){
+
+    // })
+    //context.response.body.
+    //}
+    console.log(errorRes);
+    callback();
   }  
 };
