@@ -6,7 +6,7 @@
   "additionalErrorData": [],
   "items": [{
     "category": "mozu",
-    "errorCode": "PAYMENT_ERROR",
+    "errorCode": "",
     "message": "",
     "additionalErrorData": [{
         "name": "Property",

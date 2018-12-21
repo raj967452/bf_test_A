@@ -22,20 +22,23 @@
  */
 var cartResourceFactory = require('mozu-node-sdk/clients/commerce/cart');
 var mozuConstants = require("mozu-node-sdk/constants");
-var borderFree = require("../util/borderFree/borderFree.checkout");
+var borderFree = require("../../borderFree/borderFree.checkout");
 
 module.exports = function (context, callback) {
   var borderFreeResponse = JSON.parse(JSON.stringify(context.request.query));
 
   try {
-    if(borderFreeResponse.action === 'borderFree'){
-      if(borderFreeResponse.ppStatus === 'ACCEPTED' && borderFreeResponse.originalCartId){
-        borderFree.deleteCartData(context, borderFreeResponse, callback);
+    if (borderFreeResponse.action === 'borderFree') {
+      if (borderFreeResponse.ppStatus === 'ACCEPTED' && borderFreeResponse.originalCartId) {
+        borderFree.deleteCartData(borderFreeResponse, context);
+        callback();
+      } else if (borderFreeResponse.ppStatus === 'PENDING' && borderFreeResponse.ppStatus === 'FAILED') {
+        context.response.redirect('/cart');
         callback();
       } else {
         callback();
       }
-    } else {       
+    } else {
       callback();
     }
   } catch (error) {
