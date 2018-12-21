@@ -20,20 +20,14 @@
  * data out of them the way that you would in Node.
 
  */
-var _ = require('lodash'),
-  request = require('request'),
-  xmljson = require('xmljson');
+var _ = require('lodash');
+var request = require('request');
+var xmljson = require('xmljson');
 var borderFree = require("../../borderFree/borderFree.checkout");
-
-
 var helper = require('../../borderFree/helper');
 
 module.exports = function (context, callback) {
-  var selectedCountry = context.request.cookies.currency_country_code.value;
-
   try {
-
-
     helper.getEntities(context)
       .then(function (response) {
         var bfSettings = response.items[0];
@@ -48,7 +42,7 @@ module.exports = function (context, callback) {
 
           var borderFreeCart = {
             "header": "",
-            "payload": { 
+            "payload": {
               "setCheckoutSessionRequest": {
                 "@": {
                   "id": kiboCheckoutModel.id
@@ -131,16 +125,16 @@ module.exports = function (context, callback) {
               "checkoutUrls": {
                 "successUrl": kiboSiteContext.secureHost + "/borderfree-order-confirmation?action=borderFree&orderNo=" + kiboCheckoutModel.orderNumber,
                 "pendingUrl": kiboSiteContext.secureHost + "/cart?basketId=" + kiboCheckoutModel.orderNumber,
-                "failureUrl": kiboSiteContext.secureHost + "/cart?status=fail",
-                "callbackUrl": kiboSiteContext.secureHost + "/cart?status=callback",
-                "basketUrl": kiboSiteContext.secureHost + "/cart?status=basket",
+                "failureUrl": kiboSiteContext.secureHost + "/cart",
+                "callbackUrl": kiboSiteContext.secureHost + "/cart",
+                "basketUrl": kiboSiteContext.secureHost + "/cart",
                 "contextChooserPageUrl": kiboSiteContext.secureHost + "/cart",
                 "usCartStartPageUrl": kiboSiteContext.secureHost + "/cart",
                 "paymentUrls": {
                   "payPalUrls": {
                     "returnUrl": kiboSiteContext.secureHost + "/borderfree-order-confirmation?action=borderFree&orderNo=" + kiboCheckoutModel.orderNumber + "&originalCartId=" + kiboCheckoutModel.originalCartId,
-                    "cancelUrl": kiboSiteContext.secureHost + "/cart?status=fail",
-                    "headerLogoUrl": "https://store.example.com/logo/header.png"
+                    "cancelUrl": kiboSiteContext.secureHost + "/cart",
+                    "headerLogoUrl": kiboSiteContext.secureHost + "/resources/images/logo.png"
                   }
                 }
               }
@@ -253,27 +247,15 @@ module.exports = function (context, callback) {
               // assign domesticSessionObj data to domesticSession
               _.assignIn(borderFreeCart.payload.setCheckoutSessionRequest.domesticSession, domesticSessionObj);
 
-              borderFreeSoapOptions = {
-                method: 'POST',
-                url: 'https://sandbox.borderfree.com/checkout/checkoutAPI-v2.srv',
-                headers: {
-                  'cache-control': 'no-cache',
-                  'content-type': 'application/xml',
-                  'merchantid': bfSettings.bf_merchant_id,
-                  'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password).toString("base64")
-                },
-                'body': borderFree.xmlToJsonParser(borderFreeCart)
-              };
-              console.log("beforeApi", borderFreeSoapOptions);
-              request(borderFreeSoapOptions, function (error, response, body) {
+              request(borderFree.getSoapOptionsFromBF(bfSettings, borderFreeCart), function (error, response, body) {
                 if (error) {
                   console.log(error);
-                  borderFree.errorHandling(error, context, callback);
+                  helper.errorHandling(error, context);
                   callback();
                 } else {
                   xmljson.to_json(body, function (error9, dataItems) {
                     if (error9) {
-                      borderFree.errorHandling(error9, context, callback);
+                      helper.errorHandling(error9, context);
                       callback();
                     } else {
                       try {
@@ -287,11 +269,11 @@ module.exports = function (context, callback) {
                           context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
                           callback();
                         } else {
-                          borderFree.errorHandling(dataItems, context, callback);
+                          helper.errorHandling(dataItems, context);
                           callback();
                         }
                       } catch (e) {
-                        borderFree.errorHandling(e, context, callback);
+                        helper.errorHandling(e, context);
                         callback();
                       }
                     }
@@ -300,7 +282,7 @@ module.exports = function (context, callback) {
               });
             }
           } catch (e) {
-            borderFree.errorHandling(e, context, callback);
+            helper.errorHandling(e, context);
             callback();
           }
         } else {

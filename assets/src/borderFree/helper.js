@@ -1,23 +1,30 @@
-var mozuConstants = require("mozu-node-sdk/constants");
+var constants = require("mozu-node-sdk/constants");
 var getAppInfo = require('mozu-action-helpers/get-app-info');
 var borderFreeConstants = require("./constants");
+var xmlParser = require("js2xmlparser");
+var xmljson = require('xmljson');
+
+var BFEntityClient = require("mozu-node-sdk/clients/platform/entitylists/entity");
 
 var helper = module.exports = {
+  createClientFromContext: function (client, context, removeClaims) {
+    var c = client(context);
+    if (removeClaims)
+      c.context[constants.headers.USERCLAIMS] = null;
+    return c;
+  },
   getEntities: function (context) {
     var self = this;
     return new Promise(function (resolve, reject) {
       // The Promise constructor should catch any errors thrown on
       // this tick. Alternately, try/catch and reject(err) on catch.
-      console.log("asd");
-      var BorderFreeSettingsClient = require("mozu-node-sdk/clients/platform/entitylists/entity");
-      var borderFreeSettingsEntity = BorderFreeSettingsClient(context);
-      borderFreeSettingsEntity.context['user-claims'] = null;
 
-      borderFreeSettingsEntity
+      // filter: 'bf_site_id eq ' + siteId,
+      self.createClientFromContext(BFEntityClient, context, true)
         .getEntities({
           entityListFullName: self.getBorderFreeEntity(context)
         })
-        .then(function (response) {          
+        .then(function (response) {
           // call resolve with results
           console.log(response);
           resolve(response);
@@ -29,25 +36,11 @@ var helper = module.exports = {
         });
     });
   },
-  createClientFromContext: function (client, context, removeClaims) {
-    var c = client(context);
-    if (removeClaims)
-      c.context[constants.headers.USERCLAIMS] = null;
-    return c;
+  getBorderFreeEntity: function (context) {
+    var appInfo = getAppInfo(context);
+    return borderFreeConstants.BORDERFREEID + "@" + appInfo.namespace;
   },
-  getBorderFreeSetting: function (context,callback) {
-    try {
-      
-    } catch (e) {
-      console.log("e: ", e);
-      callback();
-    }
-  },
-  getBorderFreeEntity: function(context) {
-		var appInfo = getAppInfo(context);
-    return borderFreeConstants.BORDERFREEID+"@"+appInfo.namespace;
-	},
-  getExchangeRateData: function(context){
+  getExchangeRateData: function (context) {
     var exchangeRate = {
       country_code: context.request.cookies.currency_country_code.value,
       currency_code: context.request.cookies.currency_code_override.value,
@@ -55,7 +48,8 @@ var helper = module.exports = {
     };
     return exchangeRate;
   },
-  errorHandling: function (errorRes, context, callback) {
+  /*set error message in viewData and redirect on default redirect URL*/
+  errorHandling: function (errorRes, context) {
     console.log(errorRes);
     context.response.viewData.model.messages = [{
       'message': "Error in border free"
@@ -72,6 +66,19 @@ var helper = module.exports = {
     //context.response.body.
     //}
     console.log(errorRes);
-    callback();
-  }  
+    return;
+  },
+  /*Conver JSON TO XML */
+  jsonToXmlParser: function (jsonObj) {
+    return xmlParser.parse("message", jsonObj);
+  },
+  xmlToJson: function (xmlObj,context) {
+    xmljson.to_json(xmlObj, function (error, dataItems) {
+      if (error) {
+        this.errorHandling(error,context);
+      } else {
+        return dataItems;
+      }
+    });
+  }
 };

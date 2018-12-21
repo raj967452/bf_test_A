@@ -9,12 +9,12 @@
 
 var cartResourceFactory = require('mozu-node-sdk/clients/commerce/cart');
 /**Get mozu sdk constants */
-var xmlParser = require("js2xmlparser");
 var xmljson = require('xmljson');
 
 var mozuConstants = require("mozu-node-sdk/constants");
 var errorSet = require("../borderFree/errors.json");
 var helper = require('./helper');
+var borderFreeConstants  = require("./constants");
 
 
 var defaultRedirect = "/cart";
@@ -29,56 +29,33 @@ module.exports = {
   },
 
   /* Delete cart items using Kibo Ecomm API.*/
-  deleteCartData: function (context, cancelOrderData, callback) {
+  deleteCartData: function (cancelOrderData, context) {
     var refObj = this;
 
     // get checkout factory object
     var cartResource = refObj.createClientFromContext(cartResourceFactory, context, true);
 
     // remove cart Id from response URL
-    refObj.removeCartIDFromParam(context, callback);
+    refObj.removeCartIDFromParam(context);
 
     cartResource.deleteCart({
       cartId: cancelOrderData.originalCartId
     }).then(function (cartData) {
       console.log("cartData: ", cartData);
-      callback();
+      return;
     }, function (err1) {
       console.log("err1: ", err1);
-      callback();
+      return;
     });
   },
-  removeCartIDFromParam: function (context, callback) {
+   /* remove cart Id from response UR.*/
+  removeCartIDFromParam: function (context) {
     var uri = context.request.url;
     if (uri.indexOf("&originalCartId") > 0) {
       var clean_uri = uri.replace(new RegExp('originalCartId' + "=\\w+"), "").replace("?&", "?").replace("&&", "&");
       context.response.redirect(clean_uri);
-      callback();
-    } else {
-      callback();
+      return;
     }
-  },
-  errorHandling: function (errorRes, context, callback) {
-    console.log(errorRes);
-    context.response.viewData.model.messages = [{
-      'message': "Error in border free"
-    }];
-    context.response.redirect(defaultRedirect);
-
-    //var errors = _.flatMap(errorRes.message)[0];
-    //if (!_.isUndefined(errors.errorResponse.errors)) {
-    //errorSet.items[0].message = errors.errorResponse.errors.error[0].details;
-    //context.response.body = errorSet;
-    // _.each(errors.errorResponse.errors, function(val){
-
-    // })
-    //context.response.body.
-    //}
-    console.log(errorRes);
-    callback();
-  },
-  xmlToJsonParser: function (xmlObj) {
-    return xmlParser.parse("message", xmlObj);
   },
   prepareNumber: function (num, doubleZero) {
     var str = num.toString().replace(',', '.');
@@ -99,5 +76,18 @@ module.exports = {
       }
     }
     return str;
+  },
+  getSoapOptionsFromBF: function (bfSettings, borderFreeCart) {
+    return {
+      method: 'POST',
+      url: borderFreeConstants.BF_CHECKOUT_API_URL,
+      headers: {
+        'cache-control': 'no-cache',
+        'content-type': 'application/xml',
+        'merchantid': bfSettings.bf_merchant_id,
+        'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password).toString("base64")
+      },
+      'body': helper.jsonToXmlParser(borderFreeCart)
+    };
   }
 };
