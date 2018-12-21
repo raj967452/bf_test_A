@@ -14,10 +14,11 @@ var xmljson = require('xmljson');
 var mozuConstants = require("mozu-node-sdk/constants");
 var errorSet = require("../borderFree/errors.json");
 var helper = require('./helper');
-var borderFreeConstants  = require("./constants");
+var borderFreeConstants = require("./constants");
 
 
-var defaultRedirect = "/cart";
+var defaultRedirect = borderFreeConstants.BF_DEFAULT_REDIRECT;
+
 
 module.exports = {
   /*Common method to create mozu factory client*/
@@ -27,7 +28,10 @@ module.exports = {
       c.context[mozuConstants.headers.USERCLAIMS] = null;
     return c;
   },
-
+  getChecoutModel: function (context) {
+    var kiboCheckoutModel = (context.response.viewData || {}).model;
+    return kiboCheckoutModel;
+  },
   /* Delete cart items using Kibo Ecomm API.*/
   deleteCartData: function (cancelOrderData, context) {
     var refObj = this;
@@ -48,7 +52,7 @@ module.exports = {
       return;
     });
   },
-   /* remove cart Id from response UR.*/
+  /* remove cart Id from response UR.*/
   removeCartIDFromParam: function (context) {
     var uri = context.request.url;
     if (uri.indexOf("&originalCartId") > 0) {
@@ -89,5 +93,39 @@ module.exports = {
       },
       'body': helper.jsonToXmlParser(borderFreeCart)
     };
+  },
+  getCheckoutSessionData: function (context) {
+    var checkoutModel = this.getChecoutModel(context);
+    var bf_session_data = {
+      id: checkoutModel.id,
+      ipAddress: checkoutModel.ipAddress,
+      orderNumber: checkoutModel.orderNumber
+    };
+    return bf_session_data;
+  },
+  getRedirectURL: function (context, res) {
+    var siteContext = context.items.siteContext;
+    return siteContext.secureHost;
+  },
+  getCheckoutUrls: function (context) {
+    var secureHost = this.getRedirectURL(context);
+    var orderModel = this.getChecoutModel(context);
+    return {
+      "successUrl": secureHost + defaultRedirect + borderFreeConstants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber,
+      "pendingUrl": secureHost + defaultRedirect + "?basketId=" + orderModel.orderNumber,
+      "failureUrl": secureHost + defaultRedirect,
+      "callbackUrl": secureHost + defaultRedirect,
+      "basketUrl": secureHost + defaultRedirect,
+      "contextChooserPageUrl": secureHost + defaultRedirect,
+      "usCartStartPageUrl": secureHost + defaultRedirect,
+      "paymentUrls": {
+        "payPalUrls": {
+          "returnUrl": secureHost + borderFreeConstants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
+          "cancelUrl": secureHost + defaultRedirect,
+          "headerLogoUrl": secureHost + "/resources/images/logo.png"
+        }
+      }
+    };
   }
+
 };

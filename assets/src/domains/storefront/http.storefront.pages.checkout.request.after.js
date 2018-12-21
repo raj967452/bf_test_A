@@ -37,7 +37,7 @@ module.exports = function (context, callback) {
             kiboSiteContext = context.items.siteContext,
             borderFreeSoapOptions, finalCart = [],
             bCart;
-
+          var  sessionData =  borderFree.getCheckoutSessionData(context);
           console.log('modelCheckout', kiboCheckoutModel);
 
           var borderFreeCart = {
@@ -45,7 +45,7 @@ module.exports = function (context, callback) {
             "payload": {
               "setCheckoutSessionRequest": {
                 "@": {
-                  "id": kiboCheckoutModel.id
+                  "id": sessionData.id
                 },
                 "domesticSession": {},
                 "buyerSession": {
@@ -113,7 +113,7 @@ module.exports = function (context, callback) {
             },
             "sessionDetails": {
               "buyerSessionId": context.items.pageContext.user.userId,
-              "buyerIpAddress": kiboCheckoutModel.ipAddress,
+              "buyerIpAddress": sessionData.ipAddress,
               "affiliateNetwork": {
                 "@": {
                   "id": ""
@@ -122,26 +122,11 @@ module.exports = function (context, callback) {
                 "siteId": "",
                 "timestamp": new Date().toISOString()
               },
-              "checkoutUrls": {
-                "successUrl": kiboSiteContext.secureHost + "/borderfree-order-confirmation?action=borderFree&orderNo=" + kiboCheckoutModel.orderNumber,
-                "pendingUrl": kiboSiteContext.secureHost + "/cart?basketId=" + kiboCheckoutModel.orderNumber,
-                "failureUrl": kiboSiteContext.secureHost + "/cart",
-                "callbackUrl": kiboSiteContext.secureHost + "/cart",
-                "basketUrl": kiboSiteContext.secureHost + "/cart",
-                "contextChooserPageUrl": kiboSiteContext.secureHost + "/cart",
-                "usCartStartPageUrl": kiboSiteContext.secureHost + "/cart",
-                "paymentUrls": {
-                  "payPalUrls": {
-                    "returnUrl": kiboSiteContext.secureHost + "/borderfree-order-confirmation?action=borderFree&orderNo=" + kiboCheckoutModel.orderNumber + "&originalCartId=" + kiboCheckoutModel.originalCartId,
-                    "cancelUrl": kiboSiteContext.secureHost + "/cart",
-                    "headerLogoUrl": kiboSiteContext.secureHost + "/resources/images/logo.png"
-                  }
-                }
-              }
+              "checkoutUrls": borderFree.getCheckoutUrls(context)
             },
             "orderProperties": {
               "currencyQuoteId": selectedExData.currency_QuoteId,
-              "merchantOrderId": kiboCheckoutModel.orderNumber,
+              "merchantOrderId": sessionData.orderNumber,
               "merchantOrderRef": ""
             }
           };
@@ -239,6 +224,7 @@ module.exports = function (context, callback) {
               }
 
               // bastket total calcutation
+
               basketTotalObj.totalPrice = basketTotalObj.totalSalePrice - basketTotalObj.orderDiscount + (basketTotalObj.totalProductExtraShipping + basketTotalObj.totalProductExtraHandling);
 
               // assign basket total to  domesticSessionObj
