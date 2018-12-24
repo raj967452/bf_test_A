@@ -40,16 +40,16 @@ module.exports = {
     var cartResource = refObj.createClientFromContext(cartResourceFactory, context, true);
 
     // remove cart Id from response URL
-    //refObj.removeCartIDFromParam(context);
+    refObj.removeCartIDFromParam(context);
 
     cartResource.deleteCart({
       cartId: cancelOrderData.originalCartId
     }).then(function (cartData) {
-      context.response.viewData.model.messages = [{
+      /*context.response.viewData.model.messages = [{
           'messageType': "borderFree",
           'status': borderFreeResponse.ppStatus,
           "message": "Thank you for your order!  You will receive an email confirmation."
-        }];     
+        }]; */    
       return;
     }, function (err1) {
       console.log("err1: ", err1);
@@ -61,7 +61,7 @@ module.exports = {
     var uri = context.request.url;
     if (uri.indexOf("&originalCartId") > 0) {
       var clean_uri = uri.replace(new RegExp('originalCartId' + "=\\w+"), "").replace("?&", "?").replace("&&", "&");
-     // context.response.redirect(clean_uri);
+      context.response.redirect(clean_uri);
       return;
     }
   },
@@ -102,8 +102,8 @@ module.exports = {
     var secureHost = this.getRedirectURL(context);
     var orderModel = this.getChecoutModel(context);
     return {
-      "successUrl": secureHost + defaultRedirect + borderFreeConstants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber,
-      "pendingUrl": secureHost + defaultRedirect + "?basketId=" + orderModel.orderNumber,
+      "successUrl": secureHost + borderFreeConstants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber,
+      "pendingUrl": secureHost + borderFreeConstants.BF_THANKU_PAGE + "?basketId=" + orderModel.orderNumber,
       "failureUrl": secureHost + defaultRedirect,
       "callbackUrl": secureHost + defaultRedirect,
       "basketUrl": secureHost + defaultRedirect,
@@ -111,7 +111,7 @@ module.exports = {
       "usCartStartPageUrl": secureHost + defaultRedirect,
       "paymentUrls": {
         "payPalUrls": {
-          "returnUrl": secureHost + defaultRedirect + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
+          "returnUrl": secureHost+ borderFreeConstants.BF_THANKU_PAGE  + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
           "cancelUrl": secureHost + defaultRedirect,
           "headerLogoUrl": secureHost + "/resources/images/logo.png"
         }

@@ -77,7 +77,7 @@ function AppInstall(context, callback) {
     console.log("route array size", _.size(customRoutes.routes));
     //Add / Update custom routes for BorderFree
     customRoutes = getRoutes(customRoutes, "borderFree/getBorderFreeCountries", "getBorderFreeCountries");
-    customRoutes = getRoutes(customRoutes, "borderFree/getBorderFreeExchangeRates", "getExchangeRates");
+    customRoutes = getRoutes(customRoutes, "borderFree/getBorderFreeExchangeRates", "getBorderFreeExchangeRates");
     return customRoutesApi.updateCustomRouteSettings(customRoutes);
 
   }

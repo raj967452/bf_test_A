@@ -25,9 +25,11 @@ var helper = require("../../borderFree/helper");
 var _ = require("lodash");
 module.exports = function(context, callback) {
   /*getCurrencyExchangeRates*/
+  console.log("op");
   try {
     var currencyCode = context.request.body.currencyCode,
       toCurrencyCode = context.request.body.toCurrencyCode;
+      console.log("op",currencyCode, toCurrencyCode);
     if(_.isUndefined(currencyCode) || _.isUndefined(toCurrencyCode)){
       callback();
     }
