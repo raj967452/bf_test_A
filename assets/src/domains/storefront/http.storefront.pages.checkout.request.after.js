@@ -239,31 +239,37 @@ module.exports = function (context, callback) {
               _.assignIn(borderFreeCart.payload.setCheckoutSessionRequest.domesticSession, domesticSessionObj);
               var bfRqquestBody = helper.jsonToXmlParser(borderFreeCart);
               var bfOptions = helper.getBFOptions('POST', borderFreeConstants.BF_CHECKOUT_API_URL);
-
-              request(borderFree.getSoapOptionsFromBF(bfSettings, bfRqquestBody, bfOptions), function (error, response, body) {
+              console.log(bfRqquestBody,bfOptions,bfSettings);
+              request(helper.getSoapOptionsFromBF(bfSettings, bfRqquestBody, bfOptions), function (error, response, body) {
                 if (error) {
-                  console.log(error);
+                  console.log("apiError", error);
                   helper.errorHandling(error, context);
                   callback();
                 } else {
+                  console.log("body: ", body);
                   helper.xmlToJson(body).then(function (result) {
                     var envoySessionResponse = {};
                     _.find(result.message, function (envyObj) {
-                      envoySessionResponse = envyObj.setCheckoutSessionResponse;                     
+                      envoySessionResponse = envyObj.setCheckoutSessionResponse;
                     });
-                    console.log("result: ", result);
+                    
                     if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
+                      console.log("envoyInitialParams: ", envoySessionResponse.envoyInitialParams);
                       context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
                       callback();
                     } else {
-                      helper.errorHandling(dataItems, context);
+                      console.log("else error...");
+                      helper.errorHandling("dataItems error", context);
                       callback();
                     }
                   }, function (error) {
                     console.log("promise error: ", error);
                     helper.errorHandling(error, context);
                     callback();
-                  });                
+                  }).catch(function (error) {
+                    helper.errorHandling(error, context);
+                    callback();
+                  });
                 }
               });
             }
