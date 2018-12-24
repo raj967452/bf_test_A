@@ -23,21 +23,26 @@
 var _ = require('lodash');
 var request = require('request');
 var xmljson = require('xmljson');
-var borderFree = require("../../borderFree/borderFree.checkout");
+var borderFree = require("../../borderFree/checkout");
 var helper = require('../../borderFree/helper');
+var borderFreeConstants = require("../../borderFree/constants");
 
 module.exports = function (context, callback) {
   try {
+
     helper.getEntities(context)
       .then(function (response) {
         var bfSettings = response.items[0];
+        // if borderfree not true    
+        if (!bfSettings.bf_is_enabled) return callback();
+
+        // if borderfree true    
         var selectedExData = helper.getExchangeRateData(context);
         if (!_.isUndefined(bfSettings.bf_is_enabled) && _.upperCase(selectedExData.country_code) !== 'US') {
           var kiboCheckoutModel = (context.response.viewData || {}).model,
             kiboSiteContext = context.items.siteContext,
-            borderFreeSoapOptions, finalCart = [],
             bCart;
-          var  sessionData =  borderFree.getCheckoutSessionData(context);
+          var sessionData = borderFree.getCheckoutSessionData(context);
           console.log('modelCheckout', kiboCheckoutModel);
 
           var borderFreeCart = {
@@ -232,24 +237,45 @@ module.exports = function (context, callback) {
 
               // assign domesticSessionObj data to domesticSession
               _.assignIn(borderFreeCart.payload.setCheckoutSessionRequest.domesticSession, domesticSessionObj);
+              var bfRqquestBody = helper.jsonToXmlParser(borderFreeCart);
+              var bfOptions = helper.getBFOptions('POST', borderFreeConstants.BF_CHECKOUT_API_URL);
 
-              request(borderFree.getSoapOptionsFromBF(bfSettings, borderFreeCart), function (error, response, body) {
+              request(borderFree.getSoapOptionsFromBF(bfSettings, bfRqquestBody, bfOptions), function (error, response, body) {
                 if (error) {
                   console.log(error);
                   helper.errorHandling(error, context);
                   callback();
                 } else {
+                  /*Promise.all(helper.xmlToJson(body)).then(function (result) {
+                    var envoySessionResponse = {};
+                    _.find(result.message, function (envyObj) {
+                      envoySessionResponse = envyObj.setCheckoutSessionResponse;                     
+                    });
+                    console.log("result: ", result);
+                    if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
+                      context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
+                      callback();
+                    } else {
+                      helper.errorHandling(dataItems, context);
+                      callback();
+                    }
+                  }, function (error) {
+                    console.log("promise error: ", error);
+                    helper.errorHandling(error, context);
+                    callback();
+                  });*/
+
                   xmljson.to_json(body, function (error9, dataItems) {
                     if (error9) {
                       helper.errorHandling(error9, context);
                       callback();
                     } else {
                       try {
+                        console.log(dataItems);
                         var envoySessionResponse = {};
                         _.find(dataItems.message, function (envyObj) {
                           envoySessionResponse = envyObj.setCheckoutSessionResponse;
                         });
-                        console.log(dataItems);
 
                         if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
                           context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
@@ -271,9 +297,6 @@ module.exports = function (context, callback) {
             helper.errorHandling(e, context);
             callback();
           }
-        } else {
-          // if borderfree not true    
-          callback();
         }
       }, function (err) {
         console.log("", err);

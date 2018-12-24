@@ -33,19 +33,23 @@ module.exports = {
     return kiboCheckoutModel;
   },
   /* Delete cart items using Kibo Ecomm API.*/
-  deleteCartData: function (cancelOrderData, context) {
+  deleteCartData: function (cancelOrderData, context, call) {
     var refObj = this;
 
     // get checkout factory object
     var cartResource = refObj.createClientFromContext(cartResourceFactory, context, true);
 
     // remove cart Id from response URL
-    refObj.removeCartIDFromParam(context);
+    //refObj.removeCartIDFromParam(context);
 
     cartResource.deleteCart({
       cartId: cancelOrderData.originalCartId
     }).then(function (cartData) {
-      console.log("cartData: ", cartData);
+      context.response.viewData.model.messages = [{
+          'messageType': "borderFree",
+          'status': borderFreeResponse.ppStatus,
+          "message": "Thank you for your order!  You will receive an email confirmation."
+        }];     
       return;
     }, function (err1) {
       console.log("err1: ", err1);
@@ -57,7 +61,7 @@ module.exports = {
     var uri = context.request.url;
     if (uri.indexOf("&originalCartId") > 0) {
       var clean_uri = uri.replace(new RegExp('originalCartId' + "=\\w+"), "").replace("?&", "?").replace("&&", "&");
-      context.response.redirect(clean_uri);
+     // context.response.redirect(clean_uri);
       return;
     }
   },
@@ -80,18 +84,18 @@ module.exports = {
       }
     }
     return str;
-  },
-  getSoapOptionsFromBF: function (bfSettings, borderFreeCart) {
+  },  
+  getSoapOptionsFromBF: function (bfSettings, borderFreeCart, options) {
     return {
-      method: 'POST',
-      url: borderFreeConstants.BF_CHECKOUT_API_URL,
+      method: options.type,
+      url: options.url,
       headers: {
         'cache-control': 'no-cache',
         'content-type': 'application/xml',
         'merchantid': bfSettings.bf_merchant_id,
         'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password).toString("base64")
       },
-      'body': helper.jsonToXmlParser(borderFreeCart)
+      'body': borderFreeCart
     };
   },
   getCheckoutSessionData: function (context) {
@@ -120,12 +124,15 @@ module.exports = {
       "usCartStartPageUrl": secureHost + defaultRedirect,
       "paymentUrls": {
         "payPalUrls": {
-          "returnUrl": secureHost + borderFreeConstants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
+          "returnUrl": secureHost + defaultRedirect + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
           "cancelUrl": secureHost + defaultRedirect,
           "headerLogoUrl": secureHost + "/resources/images/logo.png"
         }
       }
     };
+  },
+  getOrderItems: function(){
+    
   }
 
 };
