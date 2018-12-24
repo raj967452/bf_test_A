@@ -5,9 +5,7 @@
  */
 
 var ActionInstaller = require('mozu-action-helpers/installers/actions');
-//var tenantClient = require("mozu-node-sdk/clients/platform/tenant")();
 var constants = require("mozu-node-sdk/constants");
-var helper = require("../../borderFree/borderFree.checkout");
 var _ = require("underscore");
 
 function AppInstall(context, callback) {
@@ -100,16 +98,6 @@ function AppInstall(context, callback) {
       "borderFreeGlobalAfter": function (settings) {
         settings = settings || {};
         settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
-        return settings;
-      },
-      "getExchangeRates": function (settings) {
-        settings = settings || {};
-        settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
-        return settings;
-      },
-      "getBorderFreeCountries": function (settings) {
-        settings = settings || {};
-        settings.timeoutMilliseconds = settings.timeoutMilliseconds || 15000;
         return settings;
       }
 
