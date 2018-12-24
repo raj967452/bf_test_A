@@ -21,39 +21,59 @@
 
  */
 var request = require("request");
-var xmljson = require("xmljson");
-
+var _ = require("lodash");
+var helper = require("../../borderFree/helper");
+var borderFreeConstants = require("../../borderFree/constants");
 module.exports = function(context, callback) {
-  console.log('test!!');
+  console.log("test!!");
   /*getCountries*/
   try {
+    //Get user data from entites
+    helper
+      .getEntities(context)
+      .then(function(response) {
+        if (_.isUndefined(response.items)) {
+          callback();
+        }
+        var bfSettings = response.items[0];
+        var bfRqquestBody =
+          '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n<message>\n  <payload>\n  \t<getLocalizationDataRequest id="67f8c46daf504bbea1cdb796d3399772">\n\t\t<dataTypes>\n    \t\t<dataType  merchantId="' +
+          bfSettings.bf_merchant_id +
+          '">COUNTRIES</dataType>\n    \t\t<dataType  merchantId="' +
+          bfSettings.bf_merchant_id +
+          '">CURRENCIES</dataType>\n\t\t</dataTypes>\n\t</getLocalizationDataRequest>\n\t</payload>\n</message>';
+        var bfOptions = helper.getBFOptions(
+          "POST",
+          borderFreeConstants.BF_LOCATION_API_URL
+        );
 
-    var options = {
-      method: "POST",
-      url: "https://sandbox.borderfree.com/embassy/localizationAPI.srv",
-      headers: {
-        "cache-control": "no-cache",
-        "Content-Type": "application/xml",
-        authorization: "Basic a2lib19mcmVuY2h0b2FzdF9zdGdfYXBpOmJORzdBYWFC"
-      },
-      body: '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n<message>\n  <payload>\n  \t<getLocalizationDataRequest id="67f8c46daf504bbea1cdb796d3399772">\n\t\t<dataTypes>\n    \t\t<dataType  merchantId="5114">COUNTRIES</dataType>\n    \t\t<dataType  merchantId="5114">CURRENCIES</dataType>\n\t\t</dataTypes>\n\t</getLocalizationDataRequest>\n\t</payload>\n</message>' };
-
-    request(options, function(error, response, body) {
-      if (error) {
-        throw new Error(error);
-      } else {
-        xmljson.to_json(body, function(errorObj, dataItems) {
-          if (errorObj) {
-            context.response.body = errorObj;
-            callback();
-          } else {
-            context.response.body = dataItems;
-            console.log(response);
-            callback();
+        request(
+          helper.getSoapOptionsFromBF(bfSettings, bfRqquestBody, bfOptions),
+          function(error, response, body) {
+            if (error) {
+              console.log(error);
+              helper.errorHandling(error, context);
+              callback();
+            } else {
+              helper
+                .xmlToJson(body)
+                .then(function(dataItems) {
+                  context.response.body = dataItems;
+                  console.log(dataItems);
+                  callback();
+                })
+                .catch(function(error) {
+                  console.log(error);
+                  callback();
+                });
+            }
           }
-        });
-      }
-    });
+        );
+      })
+      .catch(function(errro) {
+        console.log(error);
+        callback();
+      });
   } catch (err) {
     context.response.body = err;
     callback();
