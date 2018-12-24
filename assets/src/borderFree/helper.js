@@ -67,8 +67,9 @@ var helper = module.exports = {
   },
   /*set error message in viewData and redirect on default redirect URL*/
   errorHandling: function (errorRes, context) {
-    console.log("errorRes: ", errorRes);
-    context.response.redirect(defaultRedirect);
+    console.log("errorRes: ", errorRes);    
+    context.response.redirect(borderFreeConstants.BF_DEFAULT_REDIRECT);
+    
     /* context.response.viewData.model.messages = [
       {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
      ];*/

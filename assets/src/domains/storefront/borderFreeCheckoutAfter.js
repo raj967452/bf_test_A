@@ -239,7 +239,7 @@ module.exports = function (context, callback) {
               _.assignIn(borderFreeCart.payload.setCheckoutSessionRequest.domesticSession, domesticSessionObj);
               var bfRqquestBody = helper.jsonToXmlParser(borderFreeCart);
               var bfOptions = helper.getBFOptions('POST', borderFreeConstants.BF_CHECKOUT_API_URL);
-              console.log(bfRqquestBody,bfOptions,bfSettings);
+              console.log(bfRqquestBody, bfOptions, bfSettings);
               request(helper.getSoapOptionsFromBF(bfSettings, bfRqquestBody, bfOptions), function (error, response, body) {
                 if (error) {
                   console.log("apiError", error);
@@ -248,20 +248,26 @@ module.exports = function (context, callback) {
                 } else {
                   console.log("body: ", body);
                   helper.xmlToJson(body).then(function (result) {
-                    var envoySessionResponse = {};
-                    _.find(result.message, function (envyObj) {
-                      envoySessionResponse = envyObj.setCheckoutSessionResponse;
-                    });
-                    
-                    if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
-                      console.log("envoyInitialParams: ", envoySessionResponse.envoyInitialParams);
-                      context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
-                      callback();
-                    } else {
-                      console.log("else error...");
-                      helper.errorHandling("dataItems error", context);
+                    try {
+                      var envoySessionResponse = {};
+                      _.find(result.message, function (envyObj) {
+                        envoySessionResponse = envyObj.setCheckoutSessionResponse;
+                      });
+
+                      if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
+                        console.log("envoyInitialParams: ", envoySessionResponse.envoyInitialParams);
+                        context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
+                        callback();
+                      } else {
+                        console.log("else error...");
+                        helper.errorHandling("dataItems error", context);
+                        callback();
+                      }
+                    } catch (error) {
+                      helper.errorHandling("catch error", context);
                       callback();
                     }
+
                   }, function (error) {
                     console.log("promise error: ", error);
                     helper.errorHandling(error, context);
