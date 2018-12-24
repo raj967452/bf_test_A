@@ -93,7 +93,8 @@ module.exports = {
         'cache-control': 'no-cache',
         'content-type': 'application/xml',
         'merchantid': bfSettings.bf_merchant_id,
-        'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password).toString("base64")
+        //'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password).toString("base64")
+        'Authorization': "Basic a2lib19mcmVuY2h0b2FzdF9zdGdfYXBpOmJORzdBYWFC"
       },
       'body': borderFreeCart
     };

@@ -75,15 +75,19 @@ var helper = module.exports = {
     return xmlParser.parse("message", jsonObj);
   },
   xmlToJson: function (xmlObj, context) {
-    xmljson.to_json(xmlObj, function (error, dataItems) {
-      if (error) {
-        console.log("xmlToJson: ", error);
-        this.errorHandling(error, context);
-      } else {
-        console.log(dataItems);
-        return dataItems;
-      }
+    return new Promise(function (resolve, reject) {
+      xmljson.to_json(xmlObj, function (error, dataItems) {
+        if (error) {
+          console.log("xmlToJson: ", error);
+          this.errorHandling(error, context);
+          reject(error);
+        } else {
+          console.log(dataItems);
+          resolve(dataItems);
+        }
+      });
     });
+
   },
   /*getOrder: function (context, id) {
     return this.createClientFromContext(Checkout, context, true).getCheckout({
@@ -94,6 +98,6 @@ var helper = module.exports = {
     return {
       type: rqType,
       url: url
-    }
+    };
   }
 };

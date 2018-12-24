@@ -246,7 +246,7 @@ module.exports = function (context, callback) {
                   helper.errorHandling(error, context);
                   callback();
                 } else {
-                  /*Promise.all(helper.xmlToJson(body)).then(function (result) {
+                  helper.xmlToJson(body).then(function (result) {
                     var envoySessionResponse = {};
                     _.find(result.message, function (envyObj) {
                       envoySessionResponse = envyObj.setCheckoutSessionResponse;                     
@@ -263,33 +263,7 @@ module.exports = function (context, callback) {
                     console.log("promise error: ", error);
                     helper.errorHandling(error, context);
                     callback();
-                  });*/
-
-                  xmljson.to_json(body, function (error9, dataItems) {
-                    if (error9) {
-                      helper.errorHandling(error9, context);
-                      callback();
-                    } else {
-                      try {
-                        console.log(dataItems);
-                        var envoySessionResponse = {};
-                        _.find(dataItems.message, function (envyObj) {
-                          envoySessionResponse = envyObj.setCheckoutSessionResponse;
-                        });
-
-                        if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
-                          context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
-                          callback();
-                        } else {
-                          helper.errorHandling(dataItems, context);
-                          callback();
-                        }
-                      } catch (e) {
-                        helper.errorHandling(e, context);
-                        callback();
-                      }
-                    }
-                  });
+                  });                
                 }
               });
             }
