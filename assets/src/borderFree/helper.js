@@ -1,10 +1,13 @@
+var _ = require('lodash');
 var constants = require("mozu-node-sdk/constants");
 var getAppInfo = require('mozu-action-helpers/get-app-info');
-var borderFreeConstants = require("./constants");
 var xmlParser = require("js2xmlparser");
 var xmljson = require('xmljson');
 
+var Checkout = require("mozu-node-sdk/clients/commerce/checkout");
 var BFEntityClient = require("mozu-node-sdk/clients/platform/entitylists/entity");
+
+var borderFreeConstants = require("./constants");
 
 var helper = module.exports = {
   createClientFromContext: function (client, context, removeClaims) {
@@ -36,6 +39,20 @@ var helper = module.exports = {
         });
     });
   },
+  getSoapOptionsFromBF: function (bfSettings, borderFreeCart, options) {
+    return {
+      method: options.type,
+      url: options.url,
+      headers: {
+        'cache-control': 'no-cache',
+        'content-type': 'application/xml',
+        'merchantid': bfSettings.bf_merchant_id,
+        //'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password)
+        'Authorization': "Basic a2lib19mcmVuY2h0b2FzdF9zdGdfYXBpOmJORzdBYWFC"
+      },
+      'body': borderFreeCart
+    };
+  },
   getBorderFreeEntity: function (context) {
     var appInfo = getAppInfo(context);
     return borderFreeConstants.BORDERFREEID + "@" + appInfo.namespace;
@@ -50,11 +67,11 @@ var helper = module.exports = {
   },
   /*set error message in viewData and redirect on default redirect URL*/
   errorHandling: function (errorRes, context) {
-    console.log(errorRes);
-    context.response.viewData.model.messages = [{
-      'message': "Error in border free"
-    }];
+    console.log("errorRes: ", errorRes);
     context.response.redirect(defaultRedirect);
+    /* context.response.viewData.model.messages = [
+      {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
+     ];*/
 
     //var errors = _.flatMap(errorRes.message)[0];
     //if (!_.isUndefined(errors.errorResponse.errors)) {
@@ -65,20 +82,36 @@ var helper = module.exports = {
     // })
     //context.response.body.
     //}
-    console.log(errorRes);
     return;
   },
   /*Conver JSON TO XML */
   jsonToXmlParser: function (jsonObj) {
     return xmlParser.parse("message", jsonObj);
   },
-  xmlToJson: function (xmlObj,context) {
-    xmljson.to_json(xmlObj, function (error, dataItems) {
-      if (error) {
-        this.errorHandling(error,context);
-      } else {
-        return dataItems;
-      }
+  xmlToJson: function (xmlObj, context) {
+    return new Promise(function (resolve, reject) {
+      xmljson.to_json(xmlObj, function (error, dataItems) {
+        if (error) {
+          console.log("xmlToJson: ", error);
+          this.errorHandling(error, context);
+          reject(error);
+        } else {
+          console.log(dataItems);
+          resolve(dataItems);
+        }
+      });
     });
+
+  },
+  /*getOrder: function (context, id) {
+    return this.createClientFromContext(Checkout, context, true).getCheckout({
+      checkoutId: id
+    });
+  }*/
+  getBFOptions: function (rqType, url) {
+    return {
+      type: rqType,
+      url: url
+    };
   }
 };

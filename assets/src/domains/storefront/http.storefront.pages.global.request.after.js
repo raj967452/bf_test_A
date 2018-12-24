@@ -22,18 +22,25 @@
  */
 var cartResourceFactory = require('mozu-node-sdk/clients/commerce/cart');
 var mozuConstants = require("mozu-node-sdk/constants");
-var borderFree = require("../../borderFree/borderFree.checkout");
+var borderFree = require("../../borderFree/checkout");
 
 module.exports = function (context, callback) {
   var borderFreeResponse = JSON.parse(JSON.stringify(context.request.query));
 
   try {
     if (borderFreeResponse.action === 'borderFree') {
-      if (borderFreeResponse.ppStatus === 'ACCEPTED' && borderFreeResponse.originalCartId) {
-        borderFree.deleteCartData(borderFreeResponse, context);
+      if ((borderFreeResponse.ppStatus == 'PENDING' || borderFreeResponse.ppStatus == 'ACCEPTED') && borderFreeResponse.originalCartId) {
+        context.response.viewData.model.messages = [{
+          'messageType': "borderFree",
+          'status': borderFreeResponse.ppStatus,
+          "message": "Thank you for your order!  You will receive an email confirmation."
+        }]; 
+        borderFree.deleteCartData(borderFreeResponse, context, callback);   
         callback();
-      } else if (borderFreeResponse.ppStatus === 'PENDING' && borderFreeResponse.ppStatus === 'FAILED') {
-        context.response.redirect('/cart');
+      } else if (borderFreeResponse.ppStatus === 'FAILED') {
+        context.response.viewData.model.messages = [{
+          'message': "Sorry, an unexpected error occurred. Please refresh the page and try again, or contact Support."
+        }];
         callback();
       } else {
         callback();

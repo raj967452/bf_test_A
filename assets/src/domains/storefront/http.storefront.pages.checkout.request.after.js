@@ -23,21 +23,26 @@
 var _ = require('lodash');
 var request = require('request');
 var xmljson = require('xmljson');
-var borderFree = require("../../borderFree/borderFree.checkout");
+var borderFree = require("../../borderFree/checkout");
 var helper = require('../../borderFree/helper');
+var borderFreeConstants = require("../../borderFree/constants");
 
 module.exports = function (context, callback) {
   try {
+
     helper.getEntities(context)
       .then(function (response) {
         var bfSettings = response.items[0];
+        // if borderfree not true    
+        if (!bfSettings.bf_is_enabled) return callback();
+
+        // if borderfree true    
         var selectedExData = helper.getExchangeRateData(context);
         if (!_.isUndefined(bfSettings.bf_is_enabled) && _.upperCase(selectedExData.country_code) !== 'US') {
           var kiboCheckoutModel = (context.response.viewData || {}).model,
             kiboSiteContext = context.items.siteContext,
-            borderFreeSoapOptions, finalCart = [],
             bCart;
-
+          var sessionData = borderFree.getCheckoutSessionData(context);
           console.log('modelCheckout', kiboCheckoutModel);
 
           var borderFreeCart = {
@@ -45,7 +50,7 @@ module.exports = function (context, callback) {
             "payload": {
               "setCheckoutSessionRequest": {
                 "@": {
-                  "id": kiboCheckoutModel.id
+                  "id": sessionData.id
                 },
                 "domesticSession": {},
                 "buyerSession": {
@@ -113,7 +118,7 @@ module.exports = function (context, callback) {
             },
             "sessionDetails": {
               "buyerSessionId": context.items.pageContext.user.userId,
-              "buyerIpAddress": kiboCheckoutModel.ipAddress,
+              "buyerIpAddress": sessionData.ipAddress,
               "affiliateNetwork": {
                 "@": {
                   "id": ""
@@ -122,26 +127,11 @@ module.exports = function (context, callback) {
                 "siteId": "",
                 "timestamp": new Date().toISOString()
               },
-              "checkoutUrls": {
-                "successUrl": kiboSiteContext.secureHost + "/borderfree-order-confirmation?action=borderFree&orderNo=" + kiboCheckoutModel.orderNumber,
-                "pendingUrl": kiboSiteContext.secureHost + "/cart?basketId=" + kiboCheckoutModel.orderNumber,
-                "failureUrl": kiboSiteContext.secureHost + "/cart",
-                "callbackUrl": kiboSiteContext.secureHost + "/cart",
-                "basketUrl": kiboSiteContext.secureHost + "/cart",
-                "contextChooserPageUrl": kiboSiteContext.secureHost + "/cart",
-                "usCartStartPageUrl": kiboSiteContext.secureHost + "/cart",
-                "paymentUrls": {
-                  "payPalUrls": {
-                    "returnUrl": kiboSiteContext.secureHost + "/borderfree-order-confirmation?action=borderFree&orderNo=" + kiboCheckoutModel.orderNumber + "&originalCartId=" + kiboCheckoutModel.originalCartId,
-                    "cancelUrl": kiboSiteContext.secureHost + "/cart",
-                    "headerLogoUrl": kiboSiteContext.secureHost + "/resources/images/logo.png"
-                  }
-                }
-              }
+              "checkoutUrls": borderFree.getCheckoutUrls(context)
             },
             "orderProperties": {
               "currencyQuoteId": selectedExData.currency_QuoteId,
-              "merchantOrderId": kiboCheckoutModel.orderNumber,
+              "merchantOrderId": sessionData.orderNumber,
               "merchantOrderRef": ""
             }
           };
@@ -239,6 +229,7 @@ module.exports = function (context, callback) {
               }
 
               // bastket total calcutation
+
               basketTotalObj.totalPrice = basketTotalObj.totalSalePrice - basketTotalObj.orderDiscount + (basketTotalObj.totalProductExtraShipping + basketTotalObj.totalProductExtraHandling);
 
               // assign basket total to  domesticSessionObj
@@ -246,37 +237,38 @@ module.exports = function (context, callback) {
 
               // assign domesticSessionObj data to domesticSession
               _.assignIn(borderFreeCart.payload.setCheckoutSessionRequest.domesticSession, domesticSessionObj);
-
-              request(borderFree.getSoapOptionsFromBF(bfSettings, borderFreeCart), function (error, response, body) {
+              var bfRqquestBody = helper.jsonToXmlParser(borderFreeCart);
+              var bfOptions = helper.getBFOptions('POST', borderFreeConstants.BF_CHECKOUT_API_URL);
+              console.log(bfRqquestBody,bfOptions,bfSettings);
+              request(helper.getSoapOptionsFromBF(bfSettings, bfRqquestBody, bfOptions), function (error, response, body) {
                 if (error) {
-                  console.log(error);
+                  console.log("apiError", error);
                   helper.errorHandling(error, context);
                   callback();
                 } else {
-                  xmljson.to_json(body, function (error9, dataItems) {
-                    if (error9) {
-                      helper.errorHandling(error9, context);
+                  console.log("body: ", body);
+                  helper.xmlToJson(body).then(function (result) {
+                    var envoySessionResponse = {};
+                    _.find(result.message, function (envyObj) {
+                      envoySessionResponse = envyObj.setCheckoutSessionResponse;
+                    });
+                    
+                    if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
+                      console.log("envoyInitialParams: ", envoySessionResponse.envoyInitialParams);
+                      context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
                       callback();
                     } else {
-                      try {
-                        var envoySessionResponse = {};
-                        _.find(dataItems.message, function (envyObj) {
-                          envoySessionResponse = envyObj.setCheckoutSessionResponse;
-                        });
-                        console.log(dataItems);
-
-                        if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
-                          context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
-                          callback();
-                        } else {
-                          helper.errorHandling(dataItems, context);
-                          callback();
-                        }
-                      } catch (e) {
-                        helper.errorHandling(e, context);
-                        callback();
-                      }
+                      console.log("else error...");
+                      helper.errorHandling("dataItems error", context);
+                      callback();
                     }
+                  }, function (error) {
+                    console.log("promise error: ", error);
+                    helper.errorHandling(error, context);
+                    callback();
+                  }).catch(function (error) {
+                    helper.errorHandling(error, context);
+                    callback();
                   });
                 }
               });
@@ -285,9 +277,6 @@ module.exports = function (context, callback) {
             helper.errorHandling(e, context);
             callback();
           }
-        } else {
-          // if borderfree not true    
-          callback();
         }
       }, function (err) {
         console.log("", err);
