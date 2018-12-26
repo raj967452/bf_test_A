@@ -12,12 +12,11 @@ var cartResourceFactory = require('mozu-node-sdk/clients/commerce/cart');
 var xmljson = require('xmljson');
 
 var mozuConstants = require("mozu-node-sdk/constants");
-var errorSet = require("../borderFree/errors.json");
 var helper = require('./helper');
-var borderFreeConstants = require("./constants");
+var bf_Constants = require("./constants");
 
 
-var defaultRedirect = borderFreeConstants.BF_DEFAULT_REDIRECT;
+var defaultRedirect = bf_Constants.BF_DEFAULT_REDIRECT;
 
 
 module.exports = {
@@ -102,8 +101,8 @@ module.exports = {
     var secureHost = this.getRedirectURL(context);
     var orderModel = this.getChecoutModel(context);
     return {
-      "successUrl": secureHost + borderFreeConstants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber,
-      "pendingUrl": secureHost + borderFreeConstants.BF_THANKU_PAGE + "?basketId=" + orderModel.orderNumber,
+      "successUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber,
+      "pendingUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?basketId=" + orderModel.orderNumber,
       "failureUrl": secureHost + defaultRedirect,
       "callbackUrl": secureHost + defaultRedirect,
       "basketUrl": secureHost + defaultRedirect,
@@ -111,7 +110,7 @@ module.exports = {
       "usCartStartPageUrl": secureHost + defaultRedirect,
       "paymentUrls": {
         "payPalUrls": {
-          "returnUrl": secureHost+ borderFreeConstants.BF_THANKU_PAGE  + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
+          "returnUrl": secureHost+ bf_Constants.BF_THANKU_PAGE  + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
           "cancelUrl": secureHost + defaultRedirect,
           "headerLogoUrl": secureHost + "/resources/images/logo.png"
         }

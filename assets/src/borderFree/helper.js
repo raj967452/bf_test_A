@@ -7,7 +7,7 @@ var xmljson = require('xmljson');
 var Checkout = require("mozu-node-sdk/clients/commerce/checkout");
 var BFEntityClient = require("mozu-node-sdk/clients/platform/entitylists/entity");
 
-var borderFreeConstants = require("./constants");
+var bf_Constants = require("./constants");
 
 var helper = module.exports = {
   createClientFromContext: function (client, context, removeClaims) {
@@ -47,15 +47,16 @@ var helper = module.exports = {
         'cache-control': 'no-cache',
         'content-type': 'application/xml',
         'merchantid': bfSettings.bf_merchant_id,
-        //'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password)
-        'Authorization': "Basic a2lib19mcmVuY2h0b2FzdF9zdGdfYXBpOmJORzdBYWFC"
+        'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password).toString('base64')
+        //'Authorization': "Basic a2lib19mcmVuY2h0b2FzdF9zdGdfYXBpOmJORzdBYWFC"
       },
       'body': borderFreeCart
     };
   },
   getBorderFreeEntity: function (context) {
     var appInfo = getAppInfo(context);
-    return borderFreeConstants.BORDERFREEID + "@" + appInfo.namespace;
+    console.log("appInfo: ", appInfo);
+    return bf_Constants.BORDERFREEID + "@" + appInfo.namespace;
   },
   getExchangeRateData: function (context) {
     var exchangeRate = {
@@ -68,7 +69,7 @@ var helper = module.exports = {
   /*set error message in viewData and redirect on default redirect URL*/
   errorHandling: function (errorRes, context) {
     console.log("errorRes: ", errorRes);    
-    context.response.redirect(borderFreeConstants.BF_DEFAULT_REDIRECT);
+    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT);
     
     /* context.response.viewData.model.messages = [
       {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
@@ -114,5 +115,15 @@ var helper = module.exports = {
       type: rqType,
       url: url
     };
+  },
+  disabledPaymentOptFromCart: function(context){
+    var defaultCountry = this.getExchangeRateData(context);
+    var externalPayments = context.items.siteContext;
+    if(!_.isUndefined(defaultCountry) && defaultCountry !=='US'){
+      _.reduce(externalPayments.checkoutSettings.externalPaymentWorkflowSettings, function(value, key) {
+        key.isEnabled = false; 
+      },externalPayments);      
+    }
+    return context.response.body = externalPayments;
   }
 };
