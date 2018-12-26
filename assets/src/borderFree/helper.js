@@ -132,14 +132,15 @@ var helper = module.exports = {
     };
   },
   disabledPaymentOptFromCart: function (context, cartModel) {
-    var defaultCountry = this.getExchangeRateData(context);
-    console.log("defaultCountry",defaultCountry);
+      var defaultCountry = this.getExchangeRateData(context);
+      console.log("defaultCountry", defaultCountry);
 
-    if (!_.isEmpty(defaultCountry.country_code) && defaultCountry.country_code.toUpperCase() !== 'US') {
-      cartModel.bf_ext_enabled = true;
-    } else {
-      cartModel.bf_ext_enabled = false;
+      if (!_.isEmpty(defaultCountry.country_code) && defaultCountry.country_code.toUpperCase() !== 'US') {
+        cartModel.bf_ext_enabled = true;
+      } else {
+        cartModel.bf_ext_enabled = false;
+      }
+      return cartModel;
     }
-    return cartModel;
-  }
+    
 };
