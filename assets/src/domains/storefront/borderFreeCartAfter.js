@@ -19,8 +19,19 @@
  * The `request` and `response` objects are both Streams and you can read
  * data out of them the way that you would in Node.
 
- */ 
-var Accounts = require("mozu-node-sdk/clients/commerce/customer/customerAccount");
-module.exports = function(context, callback) {
-    callback();
+ */
+var _ = require('lodash');
+var borderFree = require("../../borderFree/checkout");
+var helper = require('../../borderFree/helper');
+var bf_Constants = require("../../borderFree/constants");
+
+module.exports = function (context, callback) {
+    try {
+        var kiboCartModel = (context.response.viewData || {}).model;
+        helper.disabledPaymentOptFromCart(context, kiboCartModel);
+        callback();
+    } catch (error) {
+        console.log("Catch Error: ", error);
+        callback();
+    }
 };

@@ -23,7 +23,7 @@
 var request = require("request");
 var _ = require("lodash");
 var helper = require("../../borderFree/helper");
-var borderFreeConstants = require("../../borderFree/constants");
+var bf_Constants = require("../../borderFree/constants");
 module.exports = function(context, callback) {
   console.log("test!!");
   /*getCountries*/
@@ -44,7 +44,7 @@ module.exports = function(context, callback) {
           '">CURRENCIES</dataType>\n\t\t</dataTypes>\n\t</getLocalizationDataRequest>\n\t</payload>\n</message>';
         var bfOptions = helper.getBFOptions(
           "POST",
-          borderFreeConstants.BF_LOCATION_API_URL
+          bf_Constants.BF_LOCATION_API_URL
         );
 
         request(

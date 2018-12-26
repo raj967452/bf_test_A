@@ -30,11 +30,11 @@ module.exports = function (context, callback) {
   try {
     if (borderFreeResponse.action === 'borderFree') {
       if ((borderFreeResponse.ppStatus == 'PENDING' || borderFreeResponse.ppStatus == 'ACCEPTED') && borderFreeResponse.originalCartId) {
-        context.response.viewData.model.messages = [{
+        /*context.response.viewData.model.messages = [{
           'messageType': "borderFree",
           'status': borderFreeResponse.ppStatus,
           "message": "Thank you for your order!  You will receive an email confirmation."
-        }]; 
+        }]; */
         borderFree.deleteCartData(borderFreeResponse, context, callback);   
         callback();
       } else if (borderFreeResponse.ppStatus === 'FAILED') {
