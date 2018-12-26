@@ -3,9 +3,9 @@ module.exports = {
         actionName: 'http.storefront.routes',
         customFunction: require('./domains/storefront/http.storefront.routes.getBorderFreeCountries')
     },
-    'http.storefront.routes.getExchangeRates': {
+    'http.storefront.routes.getBorderFreeExchangeRates': {
         actionName: 'http.storefront.routes',
-        customFunction: require('./domains/storefront/http.storefront.routes.getExchangeRates')
+        customFunction: require('./domains/storefront/http.storefront.routes.getBorderFreeExchangeRates')
     },
     'http.storefront.pages.global.request.after': {
 	    actionName: 'http.storefront.pages.global.request.after',

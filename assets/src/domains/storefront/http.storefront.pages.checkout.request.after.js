@@ -263,15 +263,16 @@ module.exports = function (context, callback) {
           },
           'body': xmlParser.parse("message", borderFreeCart)
         };
+
         request(borderFreeSoapOptions, function (error, response, body) {
           if (error) {
-            borderFree.errorHandling(error, context, callback);
-            commonErrorTasks(context, callback);
+            console.log("error: ", error);
+            callback();
           } else {
             xmljson.to_json(body, function (error9, dataItems) {
               if (error9) {
-                borderFree.errorHandling(error9, context, callback);
-                //commonErrorTasks(context, callback);
+               console.log("error9: ", error9);
+                callback();
               } else {
                 try {
                   var envoySessionResponse = {};
@@ -280,14 +281,26 @@ module.exports = function (context, callback) {
                   });
 
                   if (envoySessionResponse.envoyInitialParams !== "undefined") {
-                    context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
+                    console.log(envoySessionResponse);
+                    kiboCheckoutModel.borderFreeData = {
+                      isBorderEnable: true,
+                      envoyResponse: envoySessionResponse.envoyInitialParams,
+                      checkoutDomain: {
+                        "domain1": "stagecheckout",
+                        "domain2": "sandbox"
+                      }
+                    };
+                    console.log(kiboCheckoutModel.borderFreeData);
+                    //context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
                     callback();
                   } else {
-                    borderFree.errorHandling(dataItems, context, callback);
+                    console.log("dataItems: ", dataItems);
+                    callback();
                     //commonErrorTasks(context, callback);
                   }
                 } catch (e) {
-                  borderFree.errorHandling(e, context, callback);
+                  console.log("e: ", e);
+                  callback();
                   //commonErrorTasks(context, callback);
                 }
               }
@@ -296,7 +309,8 @@ module.exports = function (context, callback) {
         });
       }
     } catch (e) {
-      borderFree.errorHandling(e, context, callback);
+      console.log("e: ", e);
+      callback();
       //commonErrorTasks(context, callback);
     }
   } else {
