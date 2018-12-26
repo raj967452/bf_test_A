@@ -14,5 +14,9 @@ module.exports = {
     'borderFreeCheckoutAfter': {
         actionName: 'http.storefront.pages.checkout.request.after',
         customFunction: require('./domains/storefront/borderFreeCheckoutAfter')
+    },
+    'borderFreeCartAfter': {
+        actionName: 'http.storefront.pages.cart.request.after',
+        customFunction: require('./domains/storefront/borderFreeCartAfter')
     }
 };
