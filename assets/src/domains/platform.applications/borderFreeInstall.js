@@ -99,6 +99,11 @@ function AppInstall(context, callback) {
         settings = settings || {};
         settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
         return settings;
+      },
+      "borderFreeCartAfter": function (settings) {
+        settings = settings || {};
+        settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
+        return settings;
       }
 
     }).then(self.cb.bind(null, null), self.cb);

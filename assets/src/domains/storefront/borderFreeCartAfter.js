@@ -27,9 +27,11 @@ var bf_Constants = require("../../borderFree/constants");
 
 module.exports = function (context, callback) {
     try {
-        
+        var kiboCartModel = (context.response.viewData || {}).model;
+        helper.disabledPaymentOptFromCart(context, kiboCartModel);
+        callback();
     } catch (error) {
         console.log("Catch Error: ", error);
         callback();
     }
-}
+};

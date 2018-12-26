@@ -18,14 +18,16 @@ var helper = module.exports = {
   },
   getEntities: function (context) {
     var self = this;
+    var siteID = context.items.siteContext.siteId;
     return new Promise(function (resolve, reject) {
       // The Promise constructor should catch any errors thrown on
       // this tick. Alternately, try/catch and reject(err) on catch.
 
-      // filter: 'bf_site_id eq ' + siteId,
+      // filter: 'id eq ' + siteID,
       self.createClientFromContext(BFEntityClient, context, true)
         .getEntities({
-          entityListFullName: self.getBorderFreeEntity(context)
+          entityListFullName: self.getBorderFreeEntity(context),
+          filter: 'id eq ' + siteID
         })
         .then(function (response) {
           // call resolve with results
@@ -59,18 +61,31 @@ var helper = module.exports = {
     return bf_Constants.BORDERFREEID + "@" + appInfo.namespace;
   },
   getExchangeRateData: function (context) {
-    var exchangeRate = {
-      country_code: context.request.cookies.currency_country_code.value,
-      currency_code: context.request.cookies.currency_code_override.value,
-      currency_QuoteId: context.request.cookies.currency_QuoteId.value
-    };
-    return exchangeRate;
+    try {
+      var exchangeRate = {
+        country_code: 'US',
+        currency_code: 'USD',
+        currency_QuoteId: 0
+      };
+      if (!_.isUndefined(context.request.cookies.currency_country_code)) {
+        exchangeRate = {
+          country_code: context.request.cookies.currency_country_code.value,
+          currency_code: context.request.cookies.currency_code_override.value,
+          currency_QuoteId: context.request.cookies.currency_QuoteId.value
+        };
+      }
+      return exchangeRate;
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+
   },
   /*set error message in viewData and redirect on default redirect URL*/
   errorHandling: function (errorRes, context) {
-    console.log("errorRes: ", errorRes);    
+    console.log("errorRes: ", errorRes);
     context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT);
-    
+
     /* context.response.viewData.model.messages = [
       {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
      ];*/
@@ -116,14 +131,15 @@ var helper = module.exports = {
       url: url
     };
   },
-  disabledPaymentOptFromCart: function(context){
+  disabledPaymentOptFromCart: function (context, cartModel) {
     var defaultCountry = this.getExchangeRateData(context);
-    var externalPayments = context.items.siteContext;
-    if(!_.isUndefined(defaultCountry) && defaultCountry !=='US'){
-      _.reduce(externalPayments.checkoutSettings.externalPaymentWorkflowSettings, function(value, key) {
-        key.isEnabled = false; 
-      },externalPayments);      
+    console.log("defaultCountry",defaultCountry);
+
+    if (!_.isEmpty(defaultCountry.country_code) && defaultCountry.country_code.toUpperCase() !== 'US') {
+      cartModel.bf_ext_enabled = true;
+    } else {
+      cartModel.bf_ext_enabled = false;
     }
-    return context.response.body = externalPayments;
+    return cartModel;
   }
 };

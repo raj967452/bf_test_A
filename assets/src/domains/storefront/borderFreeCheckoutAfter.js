@@ -33,17 +33,21 @@ module.exports = function (context, callback) {
     helper.getEntities(context)
       .then(function (response) {
         var bfSettings = response.items[0];
-       
+
         // if borderfree true    
         var selectedExData = helper.getExchangeRateData(context);
-        if (!_.isUndefined(bfSettings.bf_is_enabled) && _.upperCase(selectedExData.country_code) !== 'US') {
+
+        console.log("selectedExData", selectedExData);
+        try {
+          
+          if (!_.isEmpty(selectedExData.country_code) && selectedExData.country_code.toUpperCase() !== 'US') {
           var kiboCheckoutModel = (context.response.viewData || {}).model,
             kiboSiteContext = context.items.siteContext,
             bCart;
           var sessionData = borderFree.getCheckoutSessionData(context);
           console.log('modelCheckout', kiboCheckoutModel);
           console.log('kiboSiteContext', kiboSiteContext);
-
+          console.log(borderFree.getCheckoutUrls(context));
           var borderFreeCart = {
             "header": "",
             "payload": {
@@ -281,9 +285,15 @@ module.exports = function (context, callback) {
             helper.errorHandling(e, context);
             callback();
           }
+
         } else {
           callback();
         }
+        } catch (error) {
+          console.log(error);
+          callback();
+        }
+        
       }, function (err) {
         console.log("", err);
         callback();
