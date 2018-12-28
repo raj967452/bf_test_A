@@ -35,12 +35,13 @@ module.exports = function(context, callback) {
         if (_.isUndefined(response.items)) {
           callback();
         }
-        var bfSettings = response.items[0];
+        var appConfig = helper.getConfig(_.find(response.items));
+        
         var bfRqquestBody =
           '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n<message>\n  <payload>\n  \t<getLocalizationDataRequest id="67f8c46daf504bbea1cdb796d3399772">\n\t\t<dataTypes>\n    \t\t<dataType  merchantId="' +
-          bfSettings.bf_merchant_id +
+          appConfig.merchantId +
           '">COUNTRIES</dataType>\n    \t\t<dataType  merchantId="' +
-          bfSettings.bf_merchant_id +
+          appConfig.merchantId +
           '">CURRENCIES</dataType>\n\t\t</dataTypes>\n\t</getLocalizationDataRequest>\n\t</payload>\n</message>';
         var bfOptions = helper.getBFOptions(
           "POST",
@@ -48,7 +49,7 @@ module.exports = function(context, callback) {
         );
 
         request(
-          helper.getSoapOptionsFromBF(bfSettings, bfRqquestBody, bfOptions),
+          helper.getSoapOptionsFromBF(appConfig, bfRqquestBody, bfOptions),
           function(error, response, body) {
             if (error) {
               console.log(error);
