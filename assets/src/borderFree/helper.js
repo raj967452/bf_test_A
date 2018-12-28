@@ -22,8 +22,6 @@ var helper = module.exports = {
     return new Promise(function (resolve, reject) {
       // The Promise constructor should catch any errors thrown on
       // this tick. Alternately, try/catch and reject(err) on catch.
-
-      // filter: 'id eq ' + siteID,
       self.createClientFromContext(BFEntityClient, context, true)
         .getEntities({
           entityListFullName: self.getBorderFreeEntity(context),
@@ -41,23 +39,32 @@ var helper = module.exports = {
         });
     });
   },
-  getSoapOptionsFromBF: function (bfSettings, borderFreeCart, options) {
+  getConfig: function (appConfig) {
+    return {
+      userName: appConfig.bf_api_username,
+      password: appConfig.bf_api_password,
+      environment: appConfig.bf_environment || "staging",
+      merchantId: appConfig.bf_merchant_id,
+      currencyCode: appConfig.bf_merchant_currency_code || 'USD',
+      cuntryCode: appConfig.bf_merchant_country_code || 'US'
+    };
+  },
+
+  getSoapOptionsFromBF: function (appConfig, borderFreeCart, options) {
     return {
       method: options.type,
       url: options.url,
       headers: {
         'cache-control': 'no-cache',
         'content-type': 'application/xml',
-        'merchantid': bfSettings.bf_merchant_id,
-        'Authorization': "Basic " + new Buffer(bfSettings.bf_api_username + ":" + bfSettings.bf_api_password).toString('base64')
-        //'Authorization': "Basic a2lib19mcmVuY2h0b2FzdF9zdGdfYXBpOmJORzdBYWFC"
+        'merchantid': appConfig.merchantId,
+        'Authorization': "Basic " + new Buffer(appConfig.userName + ":" + appConfig.password).toString('base64')
       },
       'body': borderFreeCart
     };
   },
   getBorderFreeEntity: function (context) {
     var appInfo = getAppInfo(context);
-    console.log("appInfo: ", appInfo);
     return bf_Constants.BORDERFREEID + "@" + appInfo.namespace;
   },
   getExchangeRateData: function (context) {
@@ -120,11 +127,6 @@ var helper = module.exports = {
     });
 
   },
-  /*getOrder: function (context, id) {
-    return this.createClientFromContext(Checkout, context, true).getCheckout({
-      checkoutId: id
-    });
-  }*/
   getBFOptions: function (rqType, url) {
     return {
       type: rqType,
@@ -133,7 +135,7 @@ var helper = module.exports = {
   },
   disabledPaymentOptFromCart: function (context, cartModel) {
     var defaultCountry = this.getExchangeRateData(context);
-    console.log("defaultCountry",defaultCountry);
+    console.log("defaultCountry", defaultCountry);
 
     if (!_.isEmpty(defaultCountry.country_code) && defaultCountry.country_code.toUpperCase() !== 'US') {
       cartModel.bf_ext_enabled = true;
@@ -141,5 +143,14 @@ var helper = module.exports = {
       cartModel.bf_ext_enabled = false;
     }
     return cartModel;
-  }
+  },
+  getOrderDetails: function(order){
+    var self = this;
+    return order;
+
+  },
+  getOrder: function(context, id) {
+    return this.createClientFromContext(Checkout, context, true).getCheckout({checkoutId: id});
+	}
+
 };
