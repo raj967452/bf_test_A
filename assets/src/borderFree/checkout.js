@@ -27,7 +27,7 @@ module.exports = {
       c.context[mozuConstants.headers.USERCLAIMS] = null;
     return c;
   },
-  getChecoutModel: function (context) {
+  getCheckoutModel: function (context) {
     var kiboCheckoutModel = (context.response.viewData || {}).model;
     return kiboCheckoutModel;
   },
@@ -48,7 +48,7 @@ module.exports = {
           'messageType': "borderFree",
           'status': borderFreeResponse.ppStatus,
           "message": "Thank you for your order!  You will receive an email confirmation."
-        }]; */    
+        }]; */
       return;
     }, function (err1) {
       console.log("err1: ", err1);
@@ -83,9 +83,9 @@ module.exports = {
       }
     }
     return str;
-  },    
+  },
   getCheckoutSessionData: function (context) {
-    var checkoutModel = this.getChecoutModel(context);
+    var checkoutModel = this.getCheckoutModel(context);
     var bf_session_data = {
       id: checkoutModel.id,
       ipAddress: checkoutModel.ipAddress,
@@ -99,7 +99,7 @@ module.exports = {
   },
   getCheckoutUrls: function (context) {
     var secureHost = this.getRedirectURL(context);
-    var orderModel = this.getChecoutModel(context);
+    var orderModel = this.getCheckoutModel(context);
     return {
       "successUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber,
       "pendingUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?basketId=" + orderModel.orderNumber,
@@ -110,15 +110,34 @@ module.exports = {
       "usCartStartPageUrl": secureHost + defaultRedirect,
       "paymentUrls": {
         "payPalUrls": {
-          "returnUrl": secureHost+ bf_Constants.BF_THANKU_PAGE  + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
+          "returnUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
           "cancelUrl": secureHost + defaultRedirect,
           "headerLogoUrl": secureHost + "/resources/images/logo.png"
         }
       }
     };
   },
-  getOrderItems: function(){
+  getCheckout: function (context, callback) {
+    var self = this;
+    var checkoutID = this.getCheckoutSessionData(context);
+    var selectedExData = helper.getExchangeRateData(context);
+    return helper.getEntities(context).then(function (config) {
+      if (selectedExData.country_code.toUpperCase() !== 'US') {
+        return helper.getOrder(context, checkoutID.id).then(function (order) {
+          return {
+            config: config,
+            order: helper.getOrderDetails(order)
+          };
+        });
+      } else {
+        return;
+      }
+    }).then(function (response) {
+      console.log("response: ------", response);
+      return;
+    });
+  },
+  getborderFreeCart: function(){
     
   }
-
 };
