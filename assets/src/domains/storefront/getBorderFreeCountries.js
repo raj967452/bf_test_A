@@ -45,7 +45,7 @@ module.exports = function(context, callback) {
           '">CURRENCIES</dataType>\n\t\t</dataTypes>\n\t</getLocalizationDataRequest>\n\t</payload>\n</message>';
         var bfOptions = helper.getBFOptions(
           "POST",
-          bf_Constants.BF_LOCATION_API_URL
+          appConfig.environment == 'staging' ? bf_Constants.BF_LOCATION_API_URL : bf_Constants.BF_PROD_LOCATION_API_URL
         );
 
         request(

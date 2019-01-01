@@ -25,7 +25,6 @@ var helper = require("../../borderFree/helper");
 var _ = require("lodash");
 module.exports = function(context, callback) {
   /*getCurrencyExchangeRates*/
-  console.log("op");
   try {
     var currencyCode = context.request.body.currencyCode,
       toCurrencyCode = context.request.body.toCurrencyCode;
@@ -41,8 +40,6 @@ module.exports = function(context, callback) {
       })
       .then(
         function(resp) {
-          console.log(resp);
-          // context.response.body = tts;
           context.response.body = JSON.stringify(resp);
           callback();
         },

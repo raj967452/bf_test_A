@@ -29,7 +29,7 @@ module.exports = function (context, callback) {
 
   try {
     if (borderFreeResponse.action === 'borderFree') {
-      if ((borderFreeResponse.ppStatus == 'PENDING' || borderFreeResponse.ppStatus == 'ACCEPTED') && borderFreeResponse.originalCartId) {
+      if ((borderFreeResponse.ppStatus == 'PENDING' || borderFreeResponse.ppStatus == 'ACCEPTED' || borderFreeResponse.ppStatus.toUpperCase() == 'OK') && borderFreeResponse.originalCartId) {
         /*context.response.viewData.model.messages = [{
           'messageType': "borderFree",
           'status': borderFreeResponse.ppStatus,

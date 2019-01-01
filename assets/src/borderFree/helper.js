@@ -46,7 +46,7 @@ var helper = module.exports = {
       environment: appConfig.bf_environment || "staging",
       merchantId: appConfig.bf_merchant_id,
       currencyCode: appConfig.bf_merchant_currency_code || 'USD',
-      cuntryCode: appConfig.bf_merchant_country_code || 'US'
+      countryCode: appConfig.bf_merchant_country_code || 'US'
     };
   },
 
@@ -91,11 +91,14 @@ var helper = module.exports = {
   /*set error message in viewData and redirect on default redirect URL*/
   errorHandling: function (errorRes, context) {
     console.log("errorRes: ", errorRes);
-    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT);
 
-    /* context.response.viewData.model.messages = [
+    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT);
+    /*context.response.viewData.model.messages = [{
+      'message': "Sorry, an unexpected error occurred. Please refresh the page and try again, or contact Support."
+    }];*/
+    /*context.response.viewData.model.messages = [
       {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
-     ];*/
+    ];*/
 
     //var errors = _.flatMap(errorRes.message)[0];
     //if (!_.isUndefined(errors.errorResponse.errors)) {
@@ -133,24 +136,29 @@ var helper = module.exports = {
       url: url
     };
   },
-  disabledPaymentOptFromCart: function (context, cartModel) {
+  disabledPaymentOptFromCart: function (context, cartModel, appConfig) {
     var defaultCountry = this.getExchangeRateData(context);
     console.log("defaultCountry", defaultCountry);
-
-    if (!_.isEmpty(defaultCountry.country_code) && defaultCountry.country_code.toUpperCase() !== 'US') {
-      cartModel.bf_ext_enabled = true;
-    } else {
-      cartModel.bf_ext_enabled = false;
+    console.log("selectedCountry", appConfig);
+    if (!_.isEmpty(defaultCountry.country_code) && !_.isEmpty(defaultCountry.currency_code)) {
+      if ((defaultCountry.country_code.toUpperCase() !== appConfig.countryCode.toUpperCase()) || (defaultCountry.currency_code.toUpperCase() !== appConfig.currencyCode.toUpperCase())) {
+        cartModel.bf_ext_enabled = true;
+      } else {
+        cartModel.bf_ext_enabled = false;
+      }
     }
+    console.log("cartModel.bf_ext_enabled",cartModel.bf_ext_enabled);
     return cartModel;
   },
-  getOrderDetails: function(order){
+  getOrderDetails: function (order) {
     var self = this;
     return order;
 
   },
-  getOrder: function(context, id) {
-    return this.createClientFromContext(Checkout, context, true).getCheckout({checkoutId: id});
-	}
+  getOrder: function (context, id) {
+    return this.createClientFromContext(Checkout, context, true).getCheckout({
+      checkoutId: id
+    });
+  }
 
 };

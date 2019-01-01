@@ -89,18 +89,18 @@ function AppInstall(context, callback) {
     });
 
     installer.enableActions(self.ctx, null, {
-
+      
+      "borderFreeCartAfter": function (settings) {
+        settings = settings || {};
+        settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
+        return settings;
+      },
       "borderFreeCheckoutAfter": function (settings) {
         settings = settings || {};
         settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
         return settings;
       },
       "borderFreeGlobalAfter": function (settings) {
-        settings = settings || {};
-        settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
-        return settings;
-      },
-      "borderFreeCartAfter": function (settings) {
         settings = settings || {};
         settings.timeoutMilliseconds = settings.timeoutMilliseconds || 30000;
         return settings;
