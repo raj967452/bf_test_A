@@ -92,10 +92,10 @@ var helper = module.exports = {
   errorHandling: function (errorRes, context) {
     console.log("errorRes: ", errorRes);
 
-    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT);
-    /*context.response.viewData.model.messages = [{
+    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT+"?errorResponse=errorOnBorderFree");
+    context.response.viewData.model.messages = [{
       'message': "Sorry, an unexpected error occurred. Please refresh the page and try again, or contact Support."
-    }];*/
+    }];
     /*context.response.viewData.model.messages = [
       {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
     ];*/
