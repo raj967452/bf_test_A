@@ -85,34 +85,34 @@ module.exports = {
     return str;
   },
   getCheckoutSessionData: function (context) {
+    var checkoutSession = context.items.siteContext;
     var checkoutModel = this.getCheckoutModel(context);
     var bf_session_data = {
       id: checkoutModel.id,
       ipAddress: checkoutModel.ipAddress,
-      orderNumber: checkoutModel.orderNumber
+      orderNumber: checkoutSession.generalSettings.isMultishipEnabled ? checkoutModel.number : checkoutModel.orderNumber,
+      isMultiship: checkoutSession.generalSettings.isMultishipEnabled,
+      originalCartId: checkoutModel.originalCartId,
+      secureHost: checkoutSession.secureHost
     };
     return bf_session_data;
   },
-  getRedirectURL: function (context, res) {
-    var siteContext = context.items.siteContext;
-    return siteContext.secureHost;
-  },
   getCheckoutUrls: function (context) {
-    var secureHost = this.getRedirectURL(context);
-    var orderModel = this.getCheckoutModel(context);
+    var orderData = this.getCheckoutSessionData(context);
+    console.log('orderData: ', orderData);
     return {
-      "successUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber,
-      "pendingUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?basketId=" + orderModel.orderNumber,
-      "failureUrl": secureHost + defaultRedirect,
-      "callbackUrl": secureHost + defaultRedirect,
-      "basketUrl": secureHost + defaultRedirect,
-      "contextChooserPageUrl": secureHost + defaultRedirect,
-      "usCartStartPageUrl": secureHost + defaultRedirect,
+      "successUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?action=borderFree&orderNo=" + orderData.orderNumber,
+      "pendingUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?basketId=" + orderData.orderNumber,
+      "failureUrl": orderData.secureHost + defaultRedirect,
+      "callbackUrl": orderData.secureHost + defaultRedirect,
+      "basketUrl": orderData.secureHost + defaultRedirect,
+      "contextChooserPageUrl": orderData.secureHost + defaultRedirect,
+      "usCartStartPageUrl": orderData.secureHost + defaultRedirect,
       "paymentUrls": {
         "payPalUrls": {
-          "returnUrl": secureHost + bf_Constants.BF_THANKU_PAGE + "?action=borderFree&orderNo=" + orderModel.orderNumber + "&originalCartId=" + orderModel.originalCartId,
-          "cancelUrl": secureHost + defaultRedirect,
-          "headerLogoUrl": secureHost + "/resources/images/logo.png"
+          "returnUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?action=borderFree&orderNo=" + orderData.orderNumber + "&originalCartId=" + orderData.originalCartId,
+          "cancelUrl": orderData.secureHost + defaultRedirect,
+          "headerLogoUrl": orderData.secureHost + "/resources/images/logo.png"
         }
       }
     };

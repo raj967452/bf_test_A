@@ -39,12 +39,10 @@ module.exports = function (context, callback) {
         try {
           if (!_.isEmpty(selectedExData.country_code) && !_.isEmpty(selectedExData.currency_code) && response.items.length>0) {
             if ((selectedExData.country_code.toUpperCase() !== appConfig.countryCode.toUpperCase())) {
-              var kiboCheckoutModel = (context.response.viewData || {}).model,
-                kiboSiteContext = context.items.siteContext,
+              var kiboCheckoutModel = (context.response.viewData || {}).model, 
                 bCart;
               var sessionData = borderFree.getCheckoutSessionData(context);
               console.log('modelCheckout', kiboCheckoutModel);
-              console.log('kiboSiteContext', kiboSiteContext);
               console.log(borderFree.getCheckoutUrls(context));
               var borderFreeCart = {
                 "header": "",
@@ -147,6 +145,8 @@ module.exports = function (context, callback) {
                     "totalPrice": 0
                   };
                   _.each(kiboCheckoutModel.items, function (item, index) {
+                    item.weightedOrderShipping = _.isUndefined(item.weightedOrderShipping) ? 0 : item.weightedOrderShipping;
+                    item.weightedOrderHandlingFee = _.isUndefined(item.weightedOrderHandlingFee) ? 0 : item.weightedOrderHandlingFee;
                     // create object for border free from kibo cart
                     bCart = {
                       "@": {
@@ -154,11 +154,11 @@ module.exports = function (context, callback) {
                       },
                       "quantity": 0,
                       "pricing": {
-                        "listPrice": 0.00,
-                        "itemDiscount": 0.00,
-                        "salePrice": 0.00,
-                        "productExtraShipping": 0.00,
-                        "productExtraHandling": 0.00
+                        "listPrice": 0,
+                        "itemDiscount": 0,
+                        "salePrice": 0,
+                        "productExtraShipping": 0,
+                        "productExtraHandling": 0
                       },
                       "display": {
                         "name": "",
@@ -202,7 +202,7 @@ module.exports = function (context, callback) {
                     bCart.pricing.productExtraHandling = item.weightedOrderHandlingFee;
                     bCart.display.name = item.product.name;
                     bCart.display.description = item.product.description;
-                    bCart.display.productUrl = kiboSiteContext.secureHost + '/product/' + item.product.productCode;
+                    bCart.display.productUrl = sessionData.secureHost + '/product/' + item.product.productCode;
                     bCart.display.imageUrl = 'https:' + item.product.imageUrl;
                     bCart.display.attributes = "";
                     bCart.display.inventory = "";
