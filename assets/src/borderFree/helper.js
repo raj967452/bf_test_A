@@ -29,7 +29,7 @@ var helper = module.exports = {
         })
         .then(function (response) {
           // call resolve with results
-          console.log(response);
+          // console.log(response);
           resolve(response);
         }, function (err) {
           // Call reject on error states
@@ -83,7 +83,6 @@ var helper = module.exports = {
       }
       return exchangeRate;
     } catch (error) {
-      console.log(error);
       return;
     }
 
@@ -91,24 +90,17 @@ var helper = module.exports = {
   /*set error message in viewData and redirect on default redirect URL*/
   errorHandling: function (errorRes, context) {
     console.log("errorRes: ", errorRes);
-
-    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT+"?errorResponse=errorOnBorderFree");
-    context.response.viewData.model.messages = [{
-      'message': "Sorry, an unexpected error occurred. Please refresh the page and try again, or contact Support."
-    }];
-    /*context.response.viewData.model.messages = [
-      {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
-    ];*/
-
-    //var errors = _.flatMap(errorRes.message)[0];
-    //if (!_.isUndefined(errors.errorResponse.errors)) {
-    //errorSet.items[0].message = errors.errorResponse.errors.error[0].details;
-    //context.response.body = errorSet;
-    // _.each(errors.errorResponse.errors, function(val){
-
-    // })
-    //context.response.body.
-    //}
+    var error;
+    if(errorRes && errorRes.message && errorRes.message.payload && errorRes.message.payload.errorResponse){
+      error = errorRes.message.payload.errorResponse.errors.error.message;
+    } else {
+      if(errorRes == "failure"){
+        error = bf_Constants.ERROR_MESSAGES.errorRes;
+      }else{
+        error = bf_Constants.ERROR_MESSAGES.unexpected;
+      }
+    }
+    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT + "?ooStatus=FAILURE&errMessage="+error);
     return;
   },
   /*Conver JSON TO XML */
@@ -119,11 +111,9 @@ var helper = module.exports = {
     return new Promise(function (resolve, reject) {
       xmljson.to_json(xmlObj, function (error, dataItems) {
         if (error) {
-          console.log("xmlToJson: ", error);
           this.errorHandling(error, context);
           reject(error);
         } else {
-          console.log(dataItems);
           resolve(dataItems);
         }
       });
@@ -138,8 +128,6 @@ var helper = module.exports = {
   },
   disabledPaymentOptFromCart: function (context, cartModel, appConfig) {
     var defaultCountry = this.getExchangeRateData(context);
-    console.log("defaultCountry", defaultCountry);
-    console.log("selectedCountry", appConfig);
     if (!_.isEmpty(defaultCountry.country_code) && !_.isEmpty(defaultCountry.currency_code)) {
       if ((defaultCountry.country_code.toUpperCase() !== appConfig.countryCode.toUpperCase()) || (defaultCountry.currency_code.toUpperCase() !== appConfig.currencyCode.toUpperCase())) {
         cartModel.bf_ext_enabled = true;
@@ -147,7 +135,6 @@ var helper = module.exports = {
         cartModel.bf_ext_enabled = false;
       }
     }
-    console.log("cartModel.bf_ext_enabled",cartModel.bf_ext_enabled);
     return cartModel;
   },
   getOrderDetails: function (order) {

@@ -34,16 +34,16 @@ module.exports = function (context, callback) {
         // if borderfree true    
         var selectedExData = helper.getExchangeRateData(context);
         var appConfig = helper.getConfig(_.find(response.items));
-        console.log("selectedExData", selectedExData);
-        console.log("appConfig", appConfig);
+        // console.log("selectedExData", selectedExData);
+        // console.log("appConfig", appConfig);
         try {
           if (!_.isEmpty(selectedExData.country_code) && !_.isEmpty(selectedExData.currency_code) && response.items.length > 0) {
             if ((selectedExData.country_code.toUpperCase() !== appConfig.countryCode.toUpperCase())) {
               var kiboCheckoutModel = (context.response.viewData || {}).model,
                 bCart;
               var sessionData = borderFree.getCheckoutSessionData(context);
-              console.log("sessionData: ", sessionData);
-              console.log('modelCheckout', kiboCheckoutModel);
+              // console.log("sessionData: ", sessionData);
+              // console.log('modelCheckout', kiboCheckoutModel);
               var borderFreeCart = {
                 "header": "",
                 "payload": {
@@ -214,6 +214,9 @@ module.exports = function (context, callback) {
                         bCart.display.size = option.value;
                       }
                     });
+                    if (!_.isEmpty(item.productDiscount)) {
+                      bCart.customData = item.productDiscount.couponCode;
+                    }
                     // calculate bastket total Sale Price, shipping and handling calcutation
                     basketTotalObj.totalSalePrice += (bCart.pricing.salePrice * item.quantity);
                     basketTotalObj.totalProductExtraShipping += (item.weightedOrderShipping * item.quantity);
@@ -221,11 +224,13 @@ module.exports = function (context, callback) {
 
                     domesticSessionObj.domesticBasket.basketItems.basketItem.push(bCart);
                   });
+
                   if (!_.isEmpty(kiboCheckoutModel.orderDiscounts)) {
                     var orderDiscountAmount = (basketTotalObj.totalSalePrice - kiboCheckoutModel.orderDiscounts[0].impact);
                     if (_.gte(orderDiscountAmount, 0) && !kiboCheckoutModel.orderDiscounts[0].excluded) {
                       basketTotalObj.orderDiscount = kiboCheckoutModel.orderDiscounts[0].impact;
                     }
+                    domesticSessionObj.domesticBasket.customData = kiboCheckoutModel.orderDiscounts[0].couponCode;
                   }
 
                   // bastket total calcutation
@@ -238,25 +243,25 @@ module.exports = function (context, callback) {
                   _.assignIn(borderFreeCart.payload.setCheckoutSessionRequest.domesticSession, domesticSessionObj);
                   var bfRqquestBody = helper.jsonToXmlParser(borderFreeCart);
                   var bfOptions = helper.getBFOptions('POST', appConfig.environment == 'staging' ? bf_Constants.BF_CHECKOUT_API_URL : bf_Constants.BF_PROD_CHECKOUT_API_URL);
-
+                  // console.log("borderFreeCart: ", borderFreeCart);
                   request(helper.getSoapOptionsFromBF(appConfig, bfRqquestBody, bfOptions), function (error, response, body) {
-                    console.log("bfRqquestBody: ", bfRqquestBody);
-                    console.log("response.statusCode: ", response.statusCode);
+                    // console.log("bfRqquestBody: ", bfRqquestBody);
+                    // console.log("response.statusCode: ", response.statusCode);
                     if (error) {
                       helper.errorHandling(error, context);
                       callback();
                     } else {
                       helper.xmlToJson(body).then(function (result) {
                         try {
-                          console.log("result: ", result);
-                          var envoySessionResponse = {};
-                          _.find(result.message, function (envyObj) {
-                            envoySessionResponse = envyObj.setCheckoutSessionResponse;
-                          });
-                          if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
+                            // console.log("result: ", result);
+                          if (!_.isUndefined(result.message.payload.setCheckoutSessionResponse)) {
+                            var envoySessionResponse = {};
+                            _.find(result.message, function (envyObj) {
+                              envoySessionResponse = envyObj.setCheckoutSessionResponse;
+                            });
                             var domain = appConfig.environment == 'staging' ? bf_Constants.BF_STAG_DOMAIN : bf_Constants.BF_PROD_DOMAIN;
                             var encodeEnvoyURL = new Buffer(envoySessionResponse.envoyInitialParams.fullEnvoyUrl).toString('base64');
-                            context.response.redirect('/international-checkout?fullEnvoyUrl=' + encodeEnvoyURL + '&checkoutDomain1=' + domain.domain1 + '&checkoutDomain2=' + domain.domain2);
+                            context.response.redirect('/international-checkout?ooStatus=CHECKOUT&fullEnvoyUrl=' + encodeEnvoyURL + '&checkoutDomain1=' + domain.domain1 + '&checkoutDomain2=' + domain.domain2);
 
                             /*kiboCheckoutModel.borderFreeData = {
                               isBorderEnable: true,
@@ -265,14 +270,13 @@ module.exports = function (context, callback) {
                             };*/
                             callback();
                           } else {
-                            helper.errorHandling("dataItems error", context);
+                            helper.errorHandling(result, context);
                             callback();
                           }
                         } catch (error) {
                           helper.errorHandling(error, context);
                           callback();
                         }
-
                       }, function (error) {
                         helper.errorHandling(error, context);
                         callback();
@@ -287,7 +291,6 @@ module.exports = function (context, callback) {
                 helper.errorHandling(e, context);
                 callback();
               }
-
             } else {
               callback();
             }
@@ -295,18 +298,12 @@ module.exports = function (context, callback) {
             callback();
           }
         } catch (error) {
-          console.log(error);
           callback();
         }
-
-
-
       }, function (err) {
-        console.log("", err);
         callback();
       });
   } catch (e) {
-    console.error("error", e);
     callback(e);
   }
 

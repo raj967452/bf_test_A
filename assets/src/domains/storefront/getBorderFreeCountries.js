@@ -25,7 +25,6 @@ var _ = require("lodash");
 var helper = require("../../borderFree/helper");
 var bf_Constants = require("../../borderFree/constants");
 module.exports = function(context, callback) {
-  console.log("test!!");
   /*getCountries*/
   try {
     //Get user data from entites
@@ -52,7 +51,6 @@ module.exports = function(context, callback) {
           helper.getSoapOptionsFromBF(appConfig, bfRqquestBody, bfOptions),
           function(error, response, body) {
             if (error) {
-              console.log(error);
               helper.errorHandling(error, context);
               callback();
             } else {
@@ -60,11 +58,9 @@ module.exports = function(context, callback) {
                 .xmlToJson(body)
                 .then(function(dataItems) {
                   context.response.body = dataItems;
-                  console.log(dataItems);
                   callback();
                 })
                 .catch(function(error) {
-                  console.log(error);
                   callback();
                 });
             }
@@ -72,11 +68,9 @@ module.exports = function(context, callback) {
         );
       })
       .catch(function(errro) {
-        console.log(error);
         callback();
       });
   } catch (err) {
-    context.response.body = err;
     callback();
   }
 };

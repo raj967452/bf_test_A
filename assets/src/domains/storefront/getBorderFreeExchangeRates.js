@@ -28,7 +28,6 @@ module.exports = function(context, callback) {
   try {
     var currencyCode = context.request.body.currencyCode,
       toCurrencyCode = context.request.body.toCurrencyCode;
-      console.log("op",currencyCode, toCurrencyCode);
     if(_.isUndefined(currencyCode) || _.isUndefined(toCurrencyCode)){
       callback();
     }
@@ -44,13 +43,10 @@ module.exports = function(context, callback) {
           callback();
         },
         function(err) {
-          context.response.body = err;
-          console.log(JSON.stringify(err));
           callback();
         }
       );
   } catch (err) {
-    context.response.body = err;
     callback();
   }
 };

@@ -16,11 +16,6 @@ var mozuConstants = require("mozu-node-sdk/constants");
 var helper = require('./helper');
 var bf_Constants = require("./constants");
 
-
-
-var defaultRedirect = bf_Constants.BF_DEFAULT_REDIRECT;
-
-
 module.exports = {
   /*Common method to create mozu factory client*/
   createClientFromContext: function (client, context, removeClaims) {
@@ -52,14 +47,8 @@ module.exports = {
     cartResource.deleteCart({
       cartId: cancelOrderData.originalCartId
     }).then(function (cartData) {
-      /*context.response.viewData.model.messages = [{
-          'messageType': "borderFree",
-          'status': borderFreeResponse.ppStatus,
-          "message": "Thank you for your order!  You will receive an email confirmation."
-        }]; */
       return;
-    }, function (err1) {
-      console.log("err1: ", err1);
+    }, function (err1) {      
       return;
     });
   },
@@ -74,7 +63,6 @@ module.exports = {
   },
   prepareNumber: function (num, doubleZero) {
     var str = num.toString().replace(',', '.');
-
     var index = str.indexOf('.');
     if (index > -1) {
       var len = str.substring(index + 1).length;
@@ -109,43 +97,20 @@ module.exports = {
   getCheckoutUrls: function (context) {
     var orderData = this.getCheckoutSessionData(context);
     return {
-      "successUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?action=borderFree&orderNo=" + orderData.orderNumber,
-      "pendingUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?basketId=" + orderData.orderNumber,
-      "failureUrl": orderData.secureHost + defaultRedirect,
-      "callbackUrl": orderData.secureHost + defaultRedirect,
-      "basketUrl": orderData.secureHost + defaultRedirect,
-      "contextChooserPageUrl": orderData.secureHost + defaultRedirect,
-      "usCartStartPageUrl": orderData.secureHost + defaultRedirect,
+      "successUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?ooStatus=SUCCESS&action=borderFree&orderNo=" + orderData.orderNumber,
+      "pendingUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?ooStatus=SUCCESS&action=borderFree&basketId=" + orderData.orderNumber,
+      "failureUrl": orderData.secureHost + bf_Constants.BF_BASKET_URL + "?ooStatus=FAILURE",
+      "callbackUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?ooStatus=SUCCESS&action=borderFree&orderNo=" + orderData.orderNumber,
+      "basketUrl": orderData.secureHost + bf_Constants.BF_BASKET_URL,
+      "contextChooserPageUrl": orderData.secureHost + bf_Constants.BF_BASKET_URL,
+      "usCartStartPageUrl": orderData.secureHost + bf_Constants.BF_BASKET_URL,
       "paymentUrls": {
         "payPalUrls": {
-          "returnUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?action=borderFree&orderNo=" + orderData.orderNumber + "&originalCartId=" + orderData.originalCartId,
-          "cancelUrl": orderData.secureHost + defaultRedirect,
-          "headerLogoUrl": orderData.secureHost + "/resources/images/logo.png"
+          "returnUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?ooStatus=SUCCESS&action=borderFree&orderNo=" + orderData.orderNumber + "&originalCartId=" + orderData.originalCartId,
+          "cancelUrl": orderData.secureHost + bf_Constants.BF_INTERNATIONAL_PAGE + "?ooStatus=FAILURE&action=borderFree",
+          "headerLogoUrl": orderData.secureHost + bf_Constants.BF_LOGO_URL
         }
       }
     };
-  },
-  getCheckout: function (context, callback) {
-    var self = this;
-    var checkoutID = this.getCheckoutSessionData(context);
-    var selectedExData = helper.getExchangeRateData(context);
-    return helper.getEntities(context).then(function (config) {
-      if (selectedExData.country_code.toUpperCase() !== 'US') {
-        return helper.getOrder(context, checkoutID.id).then(function (order) {
-          return {
-            config: config,
-            order: helper.getOrderDetails(order)
-          };
-        });
-      } else {
-        return;
-      }
-    }).then(function (response) {
-      console.log("response: ------", response);
-      return;
-    });
-  },
-  getborderFreeCart: function () {
-
   }
 };
