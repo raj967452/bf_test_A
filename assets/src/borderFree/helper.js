@@ -10,12 +10,14 @@ var BFEntityClient = require("mozu-node-sdk/clients/platform/entitylists/entity"
 var bf_Constants = require("./constants");
 
 var helper = module.exports = {
+  /*Common method to create mozu factory client*/
   createClientFromContext: function (client, context, removeClaims) {
     var c = client(context);
     if (removeClaims)
       c.context[constants.headers.USERCLAIMS] = null;
     return c;
   },
+  // get borderfree entities data based on site id
   getEntities: function (context) {
     var self = this;
     var siteID = context.items.siteContext.siteId;
@@ -39,6 +41,7 @@ var helper = module.exports = {
         });
     });
   },
+  // getConfig use to get all borderfree configuration 
   getConfig: function (appConfig) {
     return {
       userName: appConfig.bf_api_username,
@@ -49,7 +52,7 @@ var helper = module.exports = {
       countryCode: appConfig.bf_merchant_country_code || 'US'
     };
   },
-
+  // Method use to get SOAP options to get response from borderfree
   getSoapOptionsFromBF: function (appConfig, borderFreeCart, options) {
     return {
       method: options.type,
@@ -63,10 +66,12 @@ var helper = module.exports = {
       'body': borderFreeCart
     };
   },
+  // use this method to get borderfree entity name
   getBorderFreeEntity: function (context) {
     var appInfo = getAppInfo(context);
     return bf_Constants.BORDERFREEID + "@" + appInfo.namespace;
   },
+  // use this method to get currency quote and currency code based on user selection from welcome mat widgets
   getExchangeRateData: function (context) {
     try {
       var exchangeRate = {
@@ -103,10 +108,11 @@ var helper = module.exports = {
     context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT + "?ooStatus=FAILURE&errMessage="+error);
     return;
   },
-  /*Conver JSON TO XML */
+  /*Convert JSON TO XML */
   jsonToXmlParser: function (jsonObj) {
     return xmlParser.parse("message", jsonObj);
   },
+  // Convert XML to JSON
   xmlToJson: function (xmlObj, context) {
     return new Promise(function (resolve, reject) {
       xmljson.to_json(xmlObj, function (error, dataItems) {
@@ -120,12 +126,14 @@ var helper = module.exports = {
     });
 
   },
+  // use this method to define request type and request url
   getBFOptions: function (rqType, url) {
     return {
       type: rqType,
       url: url
     };
   },
+  // use this method to hide other payment option from cart page
   disabledPaymentOptFromCart: function (context, cartModel, appConfig) {
     var defaultCountry = this.getExchangeRateData(context);
     if (!_.isEmpty(defaultCountry.country_code) && !_.isEmpty(defaultCountry.currency_code)) {
@@ -136,16 +144,5 @@ var helper = module.exports = {
       }
     }
     return cartModel;
-  },
-  getOrderDetails: function (order) {
-    var self = this;
-    return order;
-
-  },
-  getOrder: function (context, id) {
-    return this.createClientFromContext(Checkout, context, true).getCheckout({
-      checkoutId: id
-    });
   }
-
 };

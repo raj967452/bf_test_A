@@ -27,7 +27,6 @@ var helper = require("../../borderFree/helper");
 
 module.exports = function (context, callback) {
   var borderFreeResponse = JSON.parse(JSON.stringify(context.request.query));
-
   try {
     if (borderFreeResponse.action === 'borderFree') {
       if ((borderFreeResponse.ppStatus == 'PENDING' || borderFreeResponse.ppStatus == 'ACCEPTED' || borderFreeResponse.ppStatus.toUpperCase() == 'OK') && borderFreeResponse.originalCartId) {

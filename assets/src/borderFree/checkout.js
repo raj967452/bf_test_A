@@ -6,7 +6,7 @@
 /**
  * Border Free Checkout factory object to perform various operations 
  */
-
+var _ = require('lodash');
 var cartResourceFactory = require('mozu-node-sdk/clients/commerce/cart');
 var generalSettings = require('mozu-node-sdk/clients/commerce/settings/generalSettings');
 /**Get mozu sdk constants */
@@ -30,6 +30,7 @@ module.exports = {
       return setting;
     });
   },
+  // get checkout model 
   getCheckoutModel: function (context) {
     var kiboCheckoutModel = (context.response.viewData || {}).model;
     return kiboCheckoutModel;
@@ -48,7 +49,7 @@ module.exports = {
       cartId: cancelOrderData.originalCartId
     }).then(function (cartData) {
       return;
-    }, function (err1) {      
+    }, function (err1) {
       return;
     });
   },
@@ -80,6 +81,7 @@ module.exports = {
     }
     return str;
   },
+  // define checkout session data here
   getCheckoutSessionData: function (context) {
     var checkoutSession = context.items.siteContext;
     var checkoutModel = this.getCheckoutModel(context);
@@ -94,6 +96,7 @@ module.exports = {
     };
     return bf_session_data;
   },
+  // define success and failure URL's for borderfree data object
   getCheckoutUrls: function (context) {
     var orderData = this.getCheckoutSessionData(context);
     return {
