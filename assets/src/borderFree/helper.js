@@ -95,8 +95,8 @@ var helper = module.exports = {
       error = errorRes.message.payload.errorResponse.errors.error.message;
     } else {
       if(errorRes == "failure"){
-        error = bf_Constants.ERROR_MESSAGES.errorRes;
-      }else{
+        error = bf_Constants.ERROR_MESSAGES.failure;
+      }else{        
         error = bf_Constants.ERROR_MESSAGES.unexpected;
       }
     }
