@@ -23,24 +23,17 @@
 var cartResourceFactory = require('mozu-node-sdk/clients/commerce/cart');
 var mozuConstants = require("mozu-node-sdk/constants");
 var borderFree = require("../../borderFree/checkout");
+var helper = require("../../borderFree/helper");
 
 module.exports = function (context, callback) {
   var borderFreeResponse = JSON.parse(JSON.stringify(context.request.query));
-
   try {
     if (borderFreeResponse.action === 'borderFree') {
-      if ((borderFreeResponse.ppStatus == 'PENDING' || borderFreeResponse.ppStatus == 'ACCEPTED') && borderFreeResponse.originalCartId) {
-        /*context.response.viewData.model.messages = [{
-          'messageType': "borderFree",
-          'status': borderFreeResponse.ppStatus,
-          "message": "Thank you for your order!  You will receive an email confirmation."
-        }]; */
+      if ((borderFreeResponse.ppStatus == 'PENDING' || borderFreeResponse.ppStatus == 'ACCEPTED' || borderFreeResponse.ppStatus.toUpperCase() == 'OK') && borderFreeResponse.originalCartId) {
         borderFree.deleteCartData(borderFreeResponse, context, callback);   
         callback();
-      } else if (borderFreeResponse.ppStatus === 'FAILED') {
-        context.response.viewData.model.messages = [{
-          'message': "Sorry, an unexpected error occurred. Please refresh the page and try again, or contact Support."
-        }];
+      } else if (borderFreeResponse.ppStatus === 'REJECTED' || borderFreeResponse.ppStatus.toUpperCase() == "CANCEL") {
+        helper.errorHandling("failure", context);
         callback();
       } else {
         callback();
@@ -49,7 +42,7 @@ module.exports = function (context, callback) {
       callback();
     }
   } catch (error) {
-    console.log("Error in border free checkout: ", error);
+    helper.errorHandling("unexpected", context);
     callback();
   }
 };

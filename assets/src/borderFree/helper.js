@@ -10,12 +10,14 @@ var BFEntityClient = require("mozu-node-sdk/clients/platform/entitylists/entity"
 var bf_Constants = require("./constants");
 
 var helper = module.exports = {
+  /*Common method to create mozu factory client*/
   createClientFromContext: function (client, context, removeClaims) {
     var c = client(context);
     if (removeClaims)
       c.context[constants.headers.USERCLAIMS] = null;
     return c;
   },
+  // get borderfree entities data based on site id
   getEntities: function (context) {
     var self = this;
     var siteID = context.items.siteContext.siteId;
@@ -29,7 +31,7 @@ var helper = module.exports = {
         })
         .then(function (response) {
           // call resolve with results
-          console.log(response);
+          // console.log(response);
           resolve(response);
         }, function (err) {
           // Call reject on error states
@@ -39,6 +41,7 @@ var helper = module.exports = {
         });
     });
   },
+  // getConfig use to get all borderfree configuration 
   getConfig: function (appConfig) {
     return {
       userName: appConfig.bf_api_username,
@@ -46,10 +49,10 @@ var helper = module.exports = {
       environment: appConfig.bf_environment || "staging",
       merchantId: appConfig.bf_merchant_id,
       currencyCode: appConfig.bf_merchant_currency_code || 'USD',
-      cuntryCode: appConfig.bf_merchant_country_code || 'US'
+      countryCode: appConfig.bf_merchant_country_code || 'US'
     };
   },
-
+  // Method use to get SOAP options to get response from borderfree
   getSoapOptionsFromBF: function (appConfig, borderFreeCart, options) {
     return {
       method: options.type,
@@ -63,10 +66,12 @@ var helper = module.exports = {
       'body': borderFreeCart
     };
   },
+  // use this method to get borderfree entity name
   getBorderFreeEntity: function (context) {
     var appInfo = getAppInfo(context);
     return bf_Constants.BORDERFREEID + "@" + appInfo.namespace;
   },
+  // use this method to get currency quote and currency code based on user selection from welcome mat widgets
   getExchangeRateData: function (context) {
     try {
       var exchangeRate = {
@@ -83,7 +88,6 @@ var helper = module.exports = {
       }
       return exchangeRate;
     } catch (error) {
-      console.log(error);
       return;
     }
 
@@ -91,66 +95,54 @@ var helper = module.exports = {
   /*set error message in viewData and redirect on default redirect URL*/
   errorHandling: function (errorRes, context) {
     console.log("errorRes: ", errorRes);
-    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT);
-
-    /* context.response.viewData.model.messages = [
-      {'messageType' : "borderFree",'status' : "ACCEPTED", "message":"Thank you for your order!  You will receive an email confirmation."}
-     ];*/
-
-    //var errors = _.flatMap(errorRes.message)[0];
-    //if (!_.isUndefined(errors.errorResponse.errors)) {
-    //errorSet.items[0].message = errors.errorResponse.errors.error[0].details;
-    //context.response.body = errorSet;
-    // _.each(errors.errorResponse.errors, function(val){
-
-    // })
-    //context.response.body.
-    //}
+    var error;
+    if(errorRes && errorRes.message && errorRes.message.payload && errorRes.message.payload.errorResponse){
+      error = errorRes.message.payload.errorResponse.errors.error.message;
+    } else {
+      if(errorRes == "failure"){
+        error = bf_Constants.ERROR_MESSAGES.failure;
+      }else{        
+        error = bf_Constants.ERROR_MESSAGES.unexpected;
+      }
+    }
+    context.response.redirect(bf_Constants.BF_DEFAULT_REDIRECT + "?ooStatus=FAILURE&errMessage="+error);
     return;
   },
-  /*Conver JSON TO XML */
+  /*Convert JSON TO XML */
   jsonToXmlParser: function (jsonObj) {
     return xmlParser.parse("message", jsonObj);
   },
+  // Convert XML to JSON
   xmlToJson: function (xmlObj, context) {
     return new Promise(function (resolve, reject) {
       xmljson.to_json(xmlObj, function (error, dataItems) {
         if (error) {
-          console.log("xmlToJson: ", error);
           this.errorHandling(error, context);
           reject(error);
         } else {
-          console.log(dataItems);
           resolve(dataItems);
         }
       });
     });
 
   },
+  // use this method to define request type and request url
   getBFOptions: function (rqType, url) {
     return {
       type: rqType,
       url: url
     };
   },
-  disabledPaymentOptFromCart: function (context, cartModel) {
+  // use this method to hide other payment option from cart page
+  disabledPaymentOptFromCart: function (context, cartModel, appConfig) {
     var defaultCountry = this.getExchangeRateData(context);
-    console.log("defaultCountry", defaultCountry);
-
-    if (!_.isEmpty(defaultCountry.country_code) && defaultCountry.country_code.toUpperCase() !== 'US') {
-      cartModel.bf_ext_enabled = true;
-    } else {
-      cartModel.bf_ext_enabled = false;
+    if (!_.isEmpty(defaultCountry.country_code) && !_.isEmpty(defaultCountry.currency_code)) {
+      if ((defaultCountry.country_code.toUpperCase() !== appConfig.countryCode.toUpperCase()) || (defaultCountry.currency_code.toUpperCase() !== appConfig.currencyCode.toUpperCase())) {
+        cartModel.bf_ext_enabled = true;
+      } else {
+        cartModel.bf_ext_enabled = false;
+      }
     }
     return cartModel;
-  },
-  getOrderDetails: function(order){
-    var self = this;
-    return order;
-
-  },
-  getOrder: function(context, id) {
-    return this.createClientFromContext(Checkout, context, true).getCheckout({checkoutId: id});
-	}
-
+  }
 };

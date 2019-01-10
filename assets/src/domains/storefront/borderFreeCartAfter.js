@@ -27,9 +27,20 @@ var bf_Constants = require("../../borderFree/constants");
 
 module.exports = function (context, callback) {
     try {
-        var kiboCartModel = (context.response.viewData || {}).model;
-        helper.disabledPaymentOptFromCart(context, kiboCartModel);
-        callback();
+        helper.getEntities(context)
+            .then(function (response) {
+                var kiboCartModel = (context.response.viewData || {}).model;
+                var appConfig = helper.getConfig(_.find(response.items));
+                if (response.items.length > 0) {
+                    helper.disabledPaymentOptFromCart(context, kiboCartModel, appConfig);
+                    callback();
+                } else {
+                    callback();
+                }
+            }, function (err) {
+                console.log("", err);
+                callback();
+            });
     } catch (error) {
         console.log("Catch Error: ", error);
         callback();

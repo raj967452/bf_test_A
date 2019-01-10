@@ -29,114 +29,112 @@ var bf_Constants = require("../../borderFree/constants");
 
 module.exports = function (context, callback) {
   try {
+    // get borderfree entities data and set borderfree checkout based on country and currency 
     helper.getEntities(context)
       .then(function (response) {
         // if borderfree true    
         var selectedExData = helper.getExchangeRateData(context);
         var appConfig = helper.getConfig(_.find(response.items));
-        console.log("selectedExData", selectedExData);
-        console.log("appConfig", appConfig);
+        // console.log("selectedExData", selectedExData);
+        // console.log("appConfig", appConfig);
         try {
-          if (!_.isEmpty(selectedExData.country_code) && selectedExData.country_code.toUpperCase() !== appConfig.cuntryCode) {
-            var kiboCheckoutModel = (context.response.viewData || {}).model,
-              kiboSiteContext = context.items.siteContext,
-              bCart;
-            var sessionData = borderFree.getCheckoutSessionData(context);
-            console.log('modelCheckout', kiboCheckoutModel);
-            console.log('kiboSiteContext', kiboSiteContext);
-            console.log(borderFree.getCheckoutUrls(context));
-            var borderFreeCart = {
-              "header": "",
-              "payload": {
-                "setCheckoutSessionRequest": {
-                  "@": {
-                    "id": sessionData.id
-                  },
-                  "domesticSession": {},
-                  "buyerSession": {
-                    "shipToAddress": {
-                      "@": {
-                        "isPoBox": "false",
-                        "isReadOnly": "false"
-                      },
-                      "firstName": "",
-                      "middleInitials": "",
-                      "lastName": "",
-                      "addressLine1": "",
-                      "addressLine2": [],
-                      "addressLine3": [],
-                      "city": "",
-                      "region": "",
-                      "postalCode": "",
-                      "countryCode": selectedExData.country_code,
-                      "email": "",
-                      "primaryPhone": "",
-                      "secondaryPhone": [],
-                      "cpf": []
+          if (!_.isEmpty(selectedExData.country_code) && !_.isEmpty(selectedExData.currency_code) && response.items.length > 0) {
+            if ((selectedExData.country_code.toUpperCase() !== appConfig.countryCode.toUpperCase())) {
+              var kiboCheckoutModel = (context.response.viewData || {}).model,
+                bCart;
+              var sessionData = borderFree.getCheckoutSessionData(context);
+              // console.log("sessionData: ", sessionData);
+              // console.log('modelCheckout', kiboCheckoutModel);
+              var borderFreeCart = {
+                "header": "",
+                "payload": {
+                  "setCheckoutSessionRequest": {
+                    "@": {
+                      "id": sessionData.id
                     },
-                    "billToAddress": {
-                      "@": {
-                        "isPoBox": "false"
+                    "domesticSession": {},
+                    "buyerSession": {
+                      "shipToAddress": {
+                        "@": {
+                          "isPoBox": "false",
+                          "isReadOnly": "false"
+                        },
+                        "firstName": "",
+                        "middleInitials": "",
+                        "lastName": "",
+                        "addressLine1": "",
+                        "addressLine2": [],
+                        "addressLine3": [],
+                        "city": "",
+                        "region": "",
+                        "postalCode": "",
+                        "countryCode": selectedExData.country_code,
+                        "email": "",
+                        "primaryPhone": "",
+                        "secondaryPhone": [],
+                        "cpf": []
                       },
-                      "firstName": "",
-                      "middleInitials": "",
-                      "lastName": "",
-                      "addressLine1": "",
-                      "city": "",
-                      "region": "",
-                      "postalCode": "",
-                      "countryCode": "",
-                      "email": "",
-                      "primaryPhone": "",
-                      "secondaryPhone": []
-                    },
-                    "buyerPreferences": {
-                      "language": "EN",
-                      "buyerCurrency": selectedExData.currency_code
+                      "billToAddress": {
+                        "@": {
+                          "isPoBox": "false"
+                        },
+                        "firstName": "",
+                        "middleInitials": "",
+                        "lastName": "",
+                        "addressLine1": "",
+                        "city": "",
+                        "region": "",
+                        "postalCode": "",
+                        "countryCode": "",
+                        "email": "",
+                        "primaryPhone": "",
+                        "secondaryPhone": []
+                      },
+                      "buyerPreferences": {
+                        "language": "EN",
+                        "buyerCurrency": selectedExData.currency_code
+                      }
                     }
                   }
                 }
-              }
-            };
-            var domesticSessionObj = {
-              "@": {
-                "merchantId": appConfig.merchantId
-              },
-              "domesticBasket": {
-                "basketItems": {
-                  "basketItem": []
+              };
+              var domesticSessionObj = {
+                "@": {
+                  "merchantId": appConfig.merchantId
                 },
-                "basketTotal": {},
-                "customData": ""
-              },
-              "domesticShippingMethod": {
-                "domesticShippingPrice": 0.00,
-                "domesticHandlingPrice": 0.00,
-                "extraInsurancePrice": 0.00,
-                "deliveryPromiseMinimum": 0,
-                "deliveryPromiseMaximum": 0
-              },
-              "sessionDetails": {
-                "buyerSessionId": context.items.pageContext.user.userId,
-                "buyerIpAddress": sessionData.ipAddress,
-                "affiliateNetwork": {
-                  "@": {
-                    "id": ""
+                "domesticBasket": {
+                  "basketItems": {
+                    "basketItem": []
                   },
-                  "merchantId": "",
-                  "siteId": "",
-                  "timestamp": new Date().toISOString()
+                  "basketTotal": {},
+                  "customData": ""
                 },
-                "checkoutUrls": borderFree.getCheckoutUrls(context)
-              },
-              "orderProperties": {
-                "currencyQuoteId": selectedExData.currency_QuoteId,
-                "merchantOrderId": sessionData.orderNumber,
-                "merchantOrderRef": ""
-              }
-            };
-
-            try {
+                "domesticShippingMethod": {
+                  "domesticShippingPrice": 0.00,
+                  "domesticHandlingPrice": 0.00,
+                  "extraInsurancePrice": 0.00,
+                  "deliveryPromiseMinimum": 0,
+                  "deliveryPromiseMaximum": 0
+                },
+                "sessionDetails": {
+                  "buyerSessionId": context.items.pageContext.user.userId,
+                  "buyerIpAddress": sessionData.ipAddress,
+                  "affiliateNetwork": {
+                    "@": {
+                      "id": ""
+                    },
+                    "merchantId": "",
+                    "siteId": "",
+                    "timestamp": new Date().toISOString()
+                  },
+                  "checkoutUrls": borderFree.getCheckoutUrls(context)
+                },
+                "orderProperties": {
+                  "currencyQuoteId": selectedExData.currency_QuoteId,
+                  "merchantOrderId": sessionData.orderNumber,
+                  "merchantOrderRef": ""
+                }
+              };
               if (kiboCheckoutModel.items.length > 0) {
                 var basketTotalObj = {
                   "totalSalePrice": 0,
@@ -145,7 +143,10 @@ module.exports = function (context, callback) {
                   "totalProductExtraHandling": 0,
                   "totalPrice": 0
                 };
+                // create borderfree basket items from checkout model
                 _.each(kiboCheckoutModel.items, function (item, index) {
+                  item.weightedOrderShipping = _.isUndefined(item.weightedOrderShipping) ? 0 : item.weightedOrderShipping;
+                  item.weightedOrderHandlingFee = _.isUndefined(item.weightedOrderHandlingFee) ? 0 : item.weightedOrderHandlingFee;
                   // create object for border free from kibo cart
                   bCart = {
                     "@": {
@@ -153,11 +154,11 @@ module.exports = function (context, callback) {
                     },
                     "quantity": 0,
                     "pricing": {
-                      "listPrice": 0.00,
-                      "itemDiscount": 0.00,
-                      "salePrice": 0.00,
-                      "productExtraShipping": 0.00,
-                      "productExtraHandling": 0.00
+                      "listPrice": 0,
+                      "itemDiscount": 0,
+                      "salePrice": 0,
+                      "productExtraShipping": 0,
+                      "productExtraHandling": 0
                     },
                     "display": {
                       "name": "",
@@ -201,7 +202,7 @@ module.exports = function (context, callback) {
                   bCart.pricing.productExtraHandling = item.weightedOrderHandlingFee;
                   bCart.display.name = item.product.name;
                   bCart.display.description = item.product.description;
-                  bCart.display.productUrl = kiboSiteContext.secureHost + '/product/' + item.product.productCode;
+                  bCart.display.productUrl = sessionData.secureHost + '/product/' + item.product.productCode;
                   bCart.display.imageUrl = 'https:' + item.product.imageUrl;
                   bCart.display.attributes = "";
                   bCart.display.inventory = "";
@@ -213,7 +214,9 @@ module.exports = function (context, callback) {
                       bCart.display.size = option.value;
                     }
                   });
-
+                  if (!_.isEmpty(item.productDiscount)) {
+                    bCart.customData = item.productDiscount.couponCode;
+                  }
                   // calculate bastket total Sale Price, shipping and handling calcutation
                   basketTotalObj.totalSalePrice += (bCart.pricing.salePrice * item.quantity);
                   basketTotalObj.totalProductExtraShipping += (item.weightedOrderShipping * item.quantity);
@@ -221,15 +224,16 @@ module.exports = function (context, callback) {
 
                   domesticSessionObj.domesticBasket.basketItems.basketItem.push(bCart);
                 });
+
                 if (!_.isEmpty(kiboCheckoutModel.orderDiscounts)) {
                   var orderDiscountAmount = (basketTotalObj.totalSalePrice - kiboCheckoutModel.orderDiscounts[0].impact);
                   if (_.gte(orderDiscountAmount, 0) && !kiboCheckoutModel.orderDiscounts[0].excluded) {
                     basketTotalObj.orderDiscount = kiboCheckoutModel.orderDiscounts[0].impact;
                   }
+                  domesticSessionObj.domesticBasket.customData = kiboCheckoutModel.orderDiscounts[0].couponCode;
                 }
 
                 // bastket total calcutation
-
                 basketTotalObj.totalPrice = basketTotalObj.totalSalePrice - basketTotalObj.orderDiscount + (basketTotalObj.totalProductExtraShipping + basketTotalObj.totalProductExtraHandling);
 
                 // assign basket total to  domesticSessionObj
@@ -239,35 +243,42 @@ module.exports = function (context, callback) {
                 _.assignIn(borderFreeCart.payload.setCheckoutSessionRequest.domesticSession, domesticSessionObj);
                 var bfRqquestBody = helper.jsonToXmlParser(borderFreeCart);
                 var bfOptions = helper.getBFOptions('POST', appConfig.environment == 'staging' ? bf_Constants.BF_CHECKOUT_API_URL : bf_Constants.BF_PROD_CHECKOUT_API_URL);
+                // console.log("borderFreeCart: ", borderFreeCart);
+                // request borderfree with XML 
                 request(helper.getSoapOptionsFromBF(appConfig, bfRqquestBody, bfOptions), function (error, response, body) {
+                  // console.log("bfRqquestBody: ", bfRqquestBody);
+                  // console.log("response.statusCode: ", response.statusCode);
                   if (error) {
                     helper.errorHandling(error, context);
                     callback();
                   } else {
                     helper.xmlToJson(body).then(function (result) {
                       try {
-                        var envoySessionResponse = {};
-                        _.find(result.message, function (envyObj) {
-                          envoySessionResponse = envyObj.setCheckoutSessionResponse;
-                        });
-                        if (!_.isUndefined(envoySessionResponse.envoyInitialParams)) {
-                          kiboCheckoutModel.borderFreeData = {
+                        // console.log("result: ", result);
+                        if (!_.isUndefined(result.message.payload.setCheckoutSessionResponse)) {
+                          // set envoy session URL and redirect to international checkout page
+                          var envoySessionResponse = {};
+                          _.find(result.message, function (envyObj) {
+                            envoySessionResponse = envyObj.setCheckoutSessionResponse;
+                          });
+                          var domain = appConfig.environment == 'staging' ? bf_Constants.BF_STAG_DOMAIN : bf_Constants.BF_PROD_DOMAIN;
+                          var encodeEnvoyURL = new Buffer(envoySessionResponse.envoyInitialParams.fullEnvoyUrl).toString('base64');
+                          context.response.redirect('/international-checkout?ooStatus=CHECKOUT&fullEnvoyUrl=' + encodeEnvoyURL + '&checkoutDomain1=' + domain.domain1 + '&checkoutDomain2=' + domain.domain2);
+
+                          /*kiboCheckoutModel.borderFreeData = {
                             isBorderEnable: true,
                             envoyResponse: envoySessionResponse.envoyInitialParams,
                             checkoutDomain: appConfig.environment == 'staging' ? bf_Constants.BF_STAG_DOMAIN : bf_Constants.BF_PROD_DOMAIN
-                          };
-                          console.log("kiboCheckoutModel------: ", kiboCheckoutModel);
-                          //context.response.redirect(envoySessionResponse.envoyInitialParams.fullEnvoyUrl);
+                          };*/
                           callback();
                         } else {
-                          helper.errorHandling("dataItems error", context);
+                          helper.errorHandling(result, context);
                           callback();
                         }
                       } catch (error) {
                         helper.errorHandling(error, context);
                         callback();
                       }
-
                     }, function (error) {
                       helper.errorHandling(error, context);
                       callback();
@@ -278,25 +289,19 @@ module.exports = function (context, callback) {
                   }
                 });
               }
-            } catch (e) {
-              helper.errorHandling(e, context);
+            } else {
               callback();
             }
-
           } else {
             callback();
           }
         } catch (error) {
-          console.log(error);
           callback();
         }
-
       }, function (err) {
-        console.log("", err);
         callback();
       });
   } catch (e) {
-    console.error("error", e);
     callback(e);
   }
 
